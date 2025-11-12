@@ -9,13 +9,14 @@ import {
   Circle,
   User,
   Phone,
-  Mail,
+  Mail as MailIcon,
   FileText,
   Download,
   Plus,
   Upload,
   Loader2,
   Sparkles,
+  Send,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -26,7 +27,8 @@ import {
   mockDocuments,
   TASK_PRIORITIES,
 } from "../utils/mockData";
-import { uploadContractPDF } from "../utils/api";
+import { uploadContractPDF, generateTaskCompletionEmail, generateEmail } from "../utils/api";
+import EmailModal from "../components/EmailModal";
 import "../styles/ProjectDetail.css";
 
 const ProjectDetail = () => {
@@ -42,6 +44,11 @@ const ProjectDetail = () => {
   const [uploadError, setUploadError] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef(null);
+  
+  // メールモーダル関連
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [generatedEmail, setGeneratedEmail] = useState(null);
+  const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
 
   useEffect(() => {
     // プロジェクトデータを取得（実際はAPIから取得）
@@ -174,6 +181,96 @@ const ProjectDetail = () => {
       // ファイル入力をリセット
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // メール作成ボタンのクリック処理
+  const handleEmailCreate = async () => {
+    setIsEmailModalOpen(true);
+    setIsGeneratingEmail(true);
+    setGeneratedEmail(null);
+
+    try {
+      // 買主を取得
+      const buyer = contacts.find((c) => c.role === "買主");
+      const seller = contacts.find((c) => c.role === "売主");
+
+      // コンテキストを準備
+      const context = {
+        projectName: project.project_name,
+        buyerName: buyer?.name || "お客様",
+        sellerName: seller?.name,
+        settlementDate: project.settlement_date,
+        propertyPrice: project.property_price,
+        situation: "案件の進捗についてご連絡いたします",
+        nextAction: "引き続き、円滑なお取引のためにサポートさせていただきます",
+        recipientRole: "関係者",
+      };
+
+      console.log("メール生成リクエスト:", context);
+
+      // メール生成API呼び出し
+      const response = await generateEmail(context);
+      
+      console.log("生成されたメール:", response.email);
+      
+      setGeneratedEmail(response.email);
+    } catch (error) {
+      console.error("メール生成エラー:", error);
+      alert(`メール生成に失敗しました: ${error.message}`);
+      setIsEmailModalOpen(false);
+    } finally {
+      setIsGeneratingEmail(false);
+    }
+  };
+
+  // タスク完了時のメール生成
+  const handleTaskComplete = async (task) => {
+    // タスクの完了状態を切り替え
+    toggleTaskCompletion(task.task_id);
+
+    // 重要タスクの場合はメール生成を提案
+    if (task.priority === "high" && !task.is_completed) {
+      const shouldGenerateEmail = window.confirm(
+        `「${task.task_name}」が完了しました。\n関係者へのメール文面を生成しますか？`
+      );
+
+      if (shouldGenerateEmail) {
+        setIsEmailModalOpen(true);
+        setIsGeneratingEmail(true);
+        setGeneratedEmail(null);
+
+        try {
+          // 買主を取得
+          const buyer = contacts.find((c) => c.role === "買主");
+          const seller = contacts.find((c) => c.role === "売主");
+
+          // タスク完了メールのコンテキスト
+          const taskContext = {
+            projectName: project.project_name,
+            taskName: task.task_name,
+            buyerName: buyer?.name || "お客様",
+            sellerName: seller?.name,
+            settlementDate: project.settlement_date,
+            recipientRole: buyer?.name || "お客様",
+          };
+
+          console.log("タスク完了メール生成リクエスト:", taskContext);
+
+          // タスク完了メール生成API呼び出し
+          const response = await generateTaskCompletionEmail(taskContext);
+          
+          console.log("生成されたメール:", response.email);
+          
+          setGeneratedEmail(response.email);
+        } catch (error) {
+          console.error("タスク完了メール生成エラー:", error);
+          alert(`メール生成に失敗しました: ${error.message}`);
+          setIsEmailModalOpen(false);
+        } finally {
+          setIsGeneratingEmail(false);
+        }
       }
     }
   };
@@ -428,7 +525,7 @@ const ProjectDetail = () => {
                     <input
                       type="checkbox"
                       checked={task.is_completed}
-                      onChange={() => toggleTaskCompletion(task.task_id)}
+                      onChange={() => handleTaskComplete(task)}
                       id={`task-${task.task_id}`}
                     />
                     <label htmlFor={`task-${task.task_id}`}>
@@ -470,9 +567,19 @@ const ProjectDetail = () => {
           <section className="detail-section contacts">
             <div className="section-header">
               <h2>👥 関係者</h2>
-              <button className="add-button-small">
-                <Plus size={16} />
-              </button>
+              <div className="header-buttons">
+                <button 
+                  className="email-create-button"
+                  onClick={handleEmailCreate}
+                  title="AIで連絡メールを作成"
+                >
+                  <Send size={16} />
+                  メール作成
+                </button>
+                <button className="add-button-small">
+                  <Plus size={16} />
+                </button>
+              </div>
             </div>
 
             <div className="contact-list">
@@ -496,7 +603,7 @@ const ProjectDetail = () => {
                       )}
                       {contact.email && (
                         <div className="contact-detail">
-                          <Mail size={14} />
+                          <MailIcon size={14} />
                           <span>{contact.email}</span>
                         </div>
                       )}
@@ -549,6 +656,14 @@ const ProjectDetail = () => {
           </section>
         </div>
       </div>
+
+      {/* メールモーダル */}
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        email={generatedEmail}
+        isGenerating={isGeneratingEmail}
+      />
     </div>
   );
 };

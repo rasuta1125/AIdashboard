@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import ocrRoutes from "./routes/ocrRoutes.js";
+import emailRoutes from "./routes/emailRoutes.js";
 
 // 環境変数の読み込み
 dotenv.config();
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 // ルートの設定
 app.use("/api/ocr", ocrRoutes);
+app.use("/api/email", emailRoutes);
 
 // ルートエンドポイント
 app.get("/", (req, res) => {
@@ -33,8 +35,12 @@ app.get("/", (req, res) => {
     message: "不動産売買決済管理システム - Backend API",
     version: "1.0.0",
     endpoints: {
-      health: "/api/ocr/health",
+      health: "/health",
+      ocrHealth: "/api/ocr/health",
       contractOCR: "POST /api/ocr/contract",
+      emailHealth: "/api/email/health",
+      emailGenerate: "POST /api/email/generate",
+      emailTaskCompletion: "POST /api/email/task-completion",
     },
   });
 });
@@ -99,6 +105,9 @@ app.listen(PORT, () => {
   console.log(`  GET  /health - ヘルスチェック`);
   console.log(`  GET  /api/ocr/health - OCR APIヘルスチェック`);
   console.log(`  POST /api/ocr/contract - 契約書OCR処理`);
+  console.log(`  GET  /api/email/health - Email APIヘルスチェック`);
+  console.log(`  POST /api/email/generate - メール生成`);
+  console.log(`  POST /api/email/task-completion - タスク完了メール生成`);
   console.log("\n✨ サーバーが起動しました！\n");
 });
 

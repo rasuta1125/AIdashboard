@@ -52,7 +52,73 @@ export async function checkApiHealth() {
   }
 }
 
+/**
+ * メールを生成
+ * @param {Object} context - メール生成に必要なコンテキスト情報
+ * @returns {Promise<Object>} 生成されたメール
+ */
+export async function generateEmail(context) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/email/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(context),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "メール生成に失敗しました");
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || "メール生成に失敗しました");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Email Generation Error:", error);
+    throw error;
+  }
+}
+
+/**
+ * タスク完了時のメールを生成
+ * @param {Object} taskContext - タスク完了時のコンテキスト
+ * @returns {Promise<Object>} 生成されたメール
+ */
+export async function generateTaskCompletionEmail(taskContext) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/email/task-completion`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(taskContext),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "メール生成に失敗しました");
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || "メール生成に失敗しました");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Task Completion Email Generation Error:", error);
+    throw error;
+  }
+}
+
 export default {
   uploadContractPDF,
   checkApiHealth,
+  generateEmail,
+  generateTaskCompletionEmail,
 };
