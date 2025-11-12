@@ -1,0 +1,116 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import ocrRoutes from "./routes/ocrRoutes.js";
+
+// 環境変数の読み込み
+dotenv.config();
+
+// Expressアプリの初期化
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// ミドルウェアの設定
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// リクエストロギング
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
+// ルートの設定
+app.use("/api/ocr", ocrRoutes);
+
+// ルートエンドポイント
+app.get("/", (req, res) => {
+  res.json({
+    message: "不動産売買決済管理システム - Backend API",
+    version: "1.0.0",
+    endpoints: {
+      health: "/api/ocr/health",
+      contractOCR: "POST /api/ocr/contract",
+    },
+  });
+});
+
+// ヘルスチェックエンドポイント
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development",
+    geminiApiConfigured: !!process.env.GEMINI_API_KEY,
+  });
+});
+
+// 404エラーハンドリング
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: "エンドポイントが見つかりません",
+    requestedUrl: req.url,
+  });
+});
+
+// グローバルエラーハンドリング
+app.use((err, req, res, next) => {
+  console.error("エラー:", err);
+
+  // Multerのエラー処理
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({
+      success: false,
+      error: "ファイルサイズが大きすぎます（最大10MB）",
+    });
+  }
+
+  if (err.code === "LIMIT_UNEXPECTED_FILE") {
+    return res.status(400).json({
+      success: false,
+      error: "予期しないフィールド名です",
+    });
+  }
+
+  // その他のエラー
+  res.status(500).json({
+    success: false,
+    error: err.message || "サーバーエラーが発生しました",
+    details: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
+
+// サーバーの起動
+app.listen(PORT, () => {
+  console.log("=".repeat(50));
+  console.log("🚀 不動産売買決済管理システム - Backend API");
+  console.log("=".repeat(50));
+  console.log(`📍 Server: http://localhost:${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`🤖 Gemini API: ${process.env.GEMINI_API_KEY ? "✅ 設定済み" : "❌ 未設定"}`);
+  console.log("=".repeat(50));
+  console.log("\n📋 利用可能なエンドポイント:");
+  console.log(`  GET  /health - ヘルスチェック`);
+  console.log(`  GET  /api/ocr/health - OCR APIヘルスチェック`);
+  console.log(`  POST /api/ocr/contract - 契約書OCR処理`);
+  console.log("\n✨ サーバーが起動しました！\n");
+});
+
+// プロセス終了時の処理
+process.on("SIGTERM", () => {
+  console.log("\n⚠️  SIGTERM received. サーバーを終了します...");
+  process.exit(0);
+});
+
+process.on("SIGINT", () => {
+  console.log("\n⚠️  SIGINT received. サーバーを終了します...");
+  process.exit(0);
+});
+
+export default app;

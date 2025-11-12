@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -13,6 +13,9 @@ import {
   FileText,
   Download,
   Plus,
+  Upload,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -23,6 +26,7 @@ import {
   mockDocuments,
   TASK_PRIORITIES,
 } from "../utils/mockData";
+import { uploadContractPDF } from "../utils/api";
 import "../styles/ProjectDetail.css";
 
 const ProjectDetail = () => {
@@ -34,6 +38,10 @@ const ProjectDetail = () => {
   const [contacts, setContacts] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     // プロジェクトデータを取得（実際はAPIから取得）
@@ -102,6 +110,74 @@ const ProjectDetail = () => {
     }).length;
   };
 
+  // ファイルアップロードボタンのクリック処理
+  const handleUploadClick = () => {
+    setUploadError(null);
+    setUploadSuccess(false);
+    fileInputRef.current?.click();
+  };
+
+  // ファイル選択時の処理
+  const handleFileSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // ファイルタイプチェック
+    if (file.type !== "application/pdf") {
+      setUploadError("PDFファイルのみアップロード可能です");
+      return;
+    }
+
+    // ファイルサイズチェック（10MB）
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("ファイルサイズは10MB以下にしてください");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+    setUploadSuccess(false);
+
+    try {
+      console.log("契約書PDFをアップロード中...", file.name);
+      
+      // APIにファイルをアップロード
+      const response = await uploadContractPDF(file);
+      
+      console.log("OCR結果:", response.data);
+
+      // 抽出されたデータで案件情報を自動入力
+      if (response.data) {
+        setProject((prev) => ({
+          ...prev,
+          contract_date: response.data.contract_date || prev.contract_date,
+          settlement_date: response.data.settlement_date || prev.settlement_date,
+          property_price: response.data.property_price || prev.property_price,
+          deposit_amount: response.data.deposit_amount || prev.deposit_amount,
+          loan_special_clause_deadline:
+            response.data.loan_special_clause_deadline ||
+            prev.loan_special_clause_deadline,
+        }));
+
+        setUploadSuccess(true);
+        
+        // 成功メッセージを3秒後に非表示
+        setTimeout(() => {
+          setUploadSuccess(false);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("アップロードエラー:", error);
+      setUploadError(error.message || "契約書の処理中にエラーが発生しました");
+    } finally {
+      setIsUploading(false);
+      // ファイル入力をリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <div className="project-detail">
       {/* ヘッダー */}
@@ -142,13 +218,57 @@ const ProjectDetail = () => {
         <section className="detail-section basic-info">
           <div className="section-header">
             <h2>📋 案件基本情報</h2>
-            <button
-              className="edit-button"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              {isEditing ? "保存" : "編集"}
-            </button>
+            <div className="header-buttons">
+              <button
+                className="upload-button"
+                onClick={handleUploadClick}
+                disabled={isUploading}
+                title="契約書PDFをアップロードして情報を自動入力"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 size={18} className="spinning" />
+                    処理中...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} />
+                    AI-OCR
+                  </>
+                )}
+              </button>
+              <button
+                className="edit-button"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                {isEditing ? "保存" : "編集"}
+              </button>
+            </div>
           </div>
+
+          {/* 隠しファイル入力 */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+          />
+
+          {/* アップロード結果メッセージ */}
+          {uploadSuccess && (
+            <div className="upload-success-message">
+              <CheckCircle2 size={20} />
+              契約書情報を自動入力しました！
+            </div>
+          )}
+
+          {uploadError && (
+            <div className="upload-error-message">
+              <AlertCircle size={20} />
+              {uploadError}
+            </div>
+          )}
 
           <div className="info-grid">
             <div className="info-item">
