@@ -13,10 +13,26 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ミドルウェアの設定
-app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+// CORS設定 - 開発環境では柔軟に対応
+const corsOptions = {
+  origin: function (origin, callback) {
+    // 開発環境では全てのオリジンを許可
+    if (process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      // 本番環境では指定されたURLのみ許可
+      const allowedOrigins = [process.env.FRONTEND_URL];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
