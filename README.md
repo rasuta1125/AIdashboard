@@ -41,7 +41,21 @@
 - **編集可能**: 生成されたメールは自由に編集可能
 - **ワンクリックコピー**: メールクライアントに簡単貼り付け
 
-### 4. 📋 案件詳細管理
+### 4. 🚨 AI機能③ - リスクアラートシステム
+
+- **自動期限チェック**: ダッシュボード表示時に全案件を自動スキャン
+- **重要期限優先**: 融資特約期限など重要な期限を最優先で検出
+- **AI分析**: Gemini AIが状況を分析し、具体的な警告メッセージを生成
+- **アクション提案**: 次に取るべき具体的な行動を提案
+- **視覚的表示**: 重要度に応じた色分け（緊急/重要/注意/確認）
+- **バッジ表示**: 該当案件カードに目立つバッジを表示
+- **検出対象**:
+  - 融資特約期限（3日以内）
+  - 決済予定日（3日以内）
+  - 期限切れタスク
+  - 緊急タスク（3日以内）
+
+### 5. 📋 案件詳細管理
 
 #### 基本情報セクション
 - 契約日、決済予定日
@@ -156,7 +170,7 @@ psql real_estate_settlement < database_schema.sql
 |-----|-----------|------|
 | Node.js | 18.x以上 | サーバー実行環境 |
 | Express | 4.x | Webフレームワーク |
-| Gemini API | 1.5 Pro | AI OCR、メール生成 |
+| Gemini API | 1.5 Pro | AI OCR、メール生成、リスク分析 |
 | Multer | 2.x | ファイルアップロード |
 | CORS | 2.x | クロスオリジン対応 |
 
@@ -216,7 +230,7 @@ psql real_estate_settlement < database_schema.sql
 
 ## 🔄 開発ロードマップ
 
-### 現在のステータス: v1.2.0 ✅
+### 現在のステータス: v1.3.0 ✅
 
 - [x] データベーススキーマ設計
 - [x] フロントエンド基本機能実装
@@ -225,6 +239,7 @@ psql real_estate_settlement < database_schema.sql
 - [x] レスポンシブデザイン
 - [x] **AI機能① - 契約書AI-OCR**
 - [x] **AI機能② - 連絡メール自動生成**
+- [x] **AI機能③ - リスクアラートシステム**
 - [x] バックエンドAPI構築
 
 ### 今後の予定
@@ -235,9 +250,9 @@ psql real_estate_settlement < database_schema.sql
 - [ ] データの永続化
 
 #### Phase 3: 追加AI機能
-- [ ] AI機能③ - タスク自動生成
-- [ ] AI機能④ - リスク検知
-- [ ] AI機能⑤ - チャットボット
+- [ ] AI機能④ - タスク自動生成
+- [ ] AI機能⑤ - リスク検知の高度化（予測モデル）
+- [ ] AI機能⑥ - チャットボット
 
 #### Phase 4: 追加機能
 - [ ] 新規案件作成フォーム
@@ -276,8 +291,9 @@ npm run dev
 - [backend/README.md](./backend/README.md) - バックエンドAPI仕様
 
 ### AI機能ガイド
-- [AI_OCR_GUIDE.md](./AI_OCR_GUIDE.md) - 契約書AI-OCR使用ガイド
-- [AI_EMAIL_GUIDE.md](./AI_EMAIL_GUIDE.md) - 連絡メール自動生成ガイド
+- [docs/AI_OCR_GUIDE.md](./docs/AI_OCR_GUIDE.md) - 契約書AI-OCR使用ガイド
+- [docs/AI_EMAIL_GUIDE.md](./docs/AI_EMAIL_GUIDE.md) - 連絡メール自動生成ガイド
+- [docs/AI_RISK_ALERT_GUIDE.md](./docs/AI_RISK_ALERT_GUIDE.md) - リスクアラートシステム使用ガイド
 
 ## 🐛 既知の問題
 
@@ -347,7 +363,7 @@ cd frontend && npm run lint
 ---
 
 **作成日**: 2025-11-12  
-**バージョン**: 1.0.0  
+**バージョン**: 1.3.0  
 **最終更新**: 2025-11-12
 
 ---
