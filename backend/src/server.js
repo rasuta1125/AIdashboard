@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import ocrRoutes from "./routes/ocrRoutes.js";
 import emailRoutes from "./routes/emailRoutes.js";
 import riskRoutes from "./routes/riskRoutes.js";
+import scheduleRoutes from "./routes/scheduleRoutes.js";
 
 // 環境変数の読み込み
 dotenv.config();
@@ -46,6 +47,7 @@ app.use((req, res, next) => {
 app.use("/api/ocr", ocrRoutes);
 app.use("/api/email", emailRoutes);
 app.use("/api/risk", riskRoutes);
+app.use("/api/schedule", scheduleRoutes);
 
 // ルートエンドポイント
 app.get("/", (req, res) => {
@@ -62,6 +64,9 @@ app.get("/", (req, res) => {
       riskHealth: "/api/risk/health",
       riskCheck: "POST /api/risk/check",
       riskCheckWithAI: "POST /api/risk/check-with-ai",
+      scheduleHealth: "/api/schedule/health",
+      scheduleSuggest: "POST /api/schedule/suggest",
+      scheduleSuggestTasks: "POST /api/schedule/suggest-tasks",
     },
   });
 });
@@ -132,6 +137,9 @@ app.listen(PORT, () => {
   console.log(`  GET  /api/risk/health - Risk APIヘルスチェック`);
   console.log(`  POST /api/risk/check - リスクチェック`);
   console.log(`  POST /api/risk/check-with-ai - AIリスクチェック`);
+  console.log(`  GET  /api/schedule/health - Schedule APIヘルスチェック`);
+  console.log(`  POST /api/schedule/suggest - AIスケジュール提案`);
+  console.log(`  POST /api/schedule/suggest-tasks - タスクスケジュール提案`);
   console.log("\n✨ サーバーが起動しました！\n");
 });
 

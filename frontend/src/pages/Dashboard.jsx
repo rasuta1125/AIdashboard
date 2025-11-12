@@ -177,15 +177,25 @@ const Dashboard = () => {
       <header className="dashboard-header">
         <div className="header-top">
           <h1>📊 案件管理ダッシュボード</h1>
-          <button
-            className={`risk-check-button ${isCheckingRisks ? "loading" : ""}`}
-            onClick={handleRiskCheck}
-            disabled={isCheckingRisks}
-            title="リスクチェック"
-          >
-            <RefreshCw size={18} className={isCheckingRisks ? "spinning" : ""} />
-            {isCheckingRisks ? "チェック中..." : "リスクチェック"}
-          </button>
+          <div className="header-actions">
+            <button
+              className="calendar-nav-button"
+              onClick={() => navigate("/calendar")}
+              title="カレンダー表示"
+            >
+              <Calendar size={18} />
+              カレンダー
+            </button>
+            <button
+              className={`risk-check-button ${isCheckingRisks ? "loading" : ""}`}
+              onClick={handleRiskCheck}
+              disabled={isCheckingRisks}
+              title="リスクチェック"
+            >
+              <RefreshCw size={18} className={isCheckingRisks ? "spinning" : ""} />
+              {isCheckingRisks ? "チェック中..." : "リスクチェック"}
+            </button>
+          </div>
         </div>
         <div className="header-stats">
           <div className="stat-card">

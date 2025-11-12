@@ -180,6 +180,70 @@ export async function checkRisksWithAI(data) {
   }
 }
 
+/**
+ * AIスケジュール提案を生成
+ * @param {Object} data - スケジュールデータ
+ * @returns {Promise<Object>} AIスケジュール提案
+ */
+export async function generateScheduleSuggestion(data) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/schedule/suggest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "スケジュール提案生成に失敗しました");
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || "スケジュール提案生成に失敗しました");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Schedule Suggestion Error:", error);
+    throw error;
+  }
+}
+
+/**
+ * タスクスケジュール提案を生成
+ * @param {Object} data - タスクデータ
+ * @returns {Promise<Object>} タスクスケジュール提案
+ */
+export async function generateTaskSchedule(data) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/schedule/suggest-tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "タスクスケジュール提案生成に失敗しました");
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || "タスクスケジュール提案生成に失敗しました");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Task Schedule Suggestion Error:", error);
+    throw error;
+  }
+}
+
 export default {
   uploadContractPDF,
   checkApiHealth,
@@ -187,4 +251,6 @@ export default {
   generateTaskCompletionEmail,
   checkRisks,
   checkRisksWithAI,
+  generateScheduleSuggestion,
+  generateTaskSchedule,
 };
