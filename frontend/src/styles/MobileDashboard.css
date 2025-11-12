@@ -1,0 +1,404 @@
+/* モバイルダッシュボード全体 */
+.mobile-dashboard {
+  min-height: 100vh;
+  background: #f7fafc;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+/* ヘッダー */
+.mobile-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem 1rem 1.5rem 1rem;
+  padding-top: calc(1rem + env(safe-area-inset-top));
+  color: white;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.calendar-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.calendar-button:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 統計グリッド */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-card.risk {
+  background: rgba(239, 68, 68, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* リスクバナー */
+.mobile-risk-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.mobile-risk-banner span {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.mobile-risk-banner button {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ステータスフィルター */
+.status-filter {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.status-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+}
+
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+.filter-chip.active {
+  background: white;
+  color: #667eea;
+  border-color: white;
+}
+
+/* プロジェクトリスト */
+.mobile-project-list {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* プロジェクトカード */
+.mobile-project-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-project-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-project-card.has-risk {
+  border-left: 4px solid #ef4444;
+}
+
+/* リスクインジケーター */
+.risk-indicator {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #fee;
+  color: #ef4444;
+  padding: 0.25rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* プロジェクトヘッダー */
+.project-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.project-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1a202c;
+  flex: 1;
+  padding-right: 2rem;
+}
+
+.chevron {
+  color: #cbd5e0;
+  flex-shrink: 0;
+}
+
+/* プロジェクト詳細 */
+.project-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ステータスバッジ */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: fit-content;
+  margin-bottom: 0.25rem;
+}
+
+.status-badge.契約直後 {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.融資承認待ち {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.決済準備中 {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
+.status-badge.決済完了 {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* 詳細行 */
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.detail-label {
+  font-weight: 500;
+}
+
+.detail-value {
+  color: #1a202c;
+  font-weight: 600;
+}
+
+.detail-value.price {
+  color: #667eea;
+}
+
+/* 残り日数バッジ */
+.days-badge {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  width: fit-content;
+  background: #f7fafc;
+  color: #4a5568;
+}
+
+.days-badge.urgent {
+  background: #fee;
+  color: #c53030;
+}
+
+.days-badge.warning {
+  background: #fef5e7;
+  color: #d69e2e;
+}
+
+.days-badge.overdue {
+  background: #fed7d7;
+  color: #c53030;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 空の状態 */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #a0aec0;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* フローティングアクションボタン */
+.fab {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  right: 1rem;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 999;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fab:active {
+  transform: scale(0.9);
+}
+
+/* プルトゥリフレッシュアニメーション */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.mobile-project-card {
+  animation: slideDown 0.3s ease;
+}
+
+/* スムーズスクロール */
+.mobile-dashboard {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* タッチフィードバック */
+.mobile-project-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.mobile-project-card:active::after {
+  opacity: 1;
+}
