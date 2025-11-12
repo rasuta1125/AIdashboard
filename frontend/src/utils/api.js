@@ -116,9 +116,75 @@ export async function generateTaskCompletionEmail(taskContext) {
   }
 }
 
+/**
+ * リスクチェック（AI警告生成なし）
+ * @param {Object} data - チェックするデータ
+ * @returns {Promise<Object>} 検出されたリスク
+ */
+export async function checkRisks(data) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/risk/check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "リスクチェックに失敗しました");
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || "リスクチェックに失敗しました");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Risk Check Error:", error);
+    throw error;
+  }
+}
+
+/**
+ * AIリスクチェック（警告生成あり）
+ * @param {Object} data - チェックするデータ
+ * @returns {Promise<Object>} AIが生成した警告
+ */
+export async function checkRisksWithAI(data) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/risk/check-with-ai`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "AIリスクチェックに失敗しました");
+    }
+
+    if (!result.success) {
+      throw new Error(result.error || "AIリスクチェックに失敗しました");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("AI Risk Check Error:", error);
+    throw error;
+  }
+}
+
 export default {
   uploadContractPDF,
   checkApiHealth,
   generateEmail,
   generateTaskCompletionEmail,
+  checkRisks,
+  checkRisksWithAI,
 };

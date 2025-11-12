@@ -1,0 +1,304 @@
+/* リスクアラートコンテナ */
+.risk-alerts-container {
+  margin-bottom: 2rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ヘッダー */
+.risk-alerts-header {
+  background: white;
+  border-radius: 12px 12px 0 0;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #2d3748;
+}
+
+.header-title svg {
+  color: #ed8936;
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.alert-count {
+  background: #ed8936;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* アラートリスト */
+.risk-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0 0 12px 12px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* アラートカード */
+.risk-alert-card {
+  border-radius: 12px;
+  padding: 1.25rem;
+  border-left: 6px solid;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.risk-alert-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateX(4px);
+}
+
+/* 重大度別スタイル */
+.risk-alert-card.critical {
+  border-left-color: #c53030;
+  background: linear-gradient(to right, #fff5f5 0%, white 100%);
+}
+
+.risk-alert-card.high {
+  border-left-color: #dd6b20;
+  background: linear-gradient(to right, #fffaf0 0%, white 100%);
+}
+
+.risk-alert-card.medium {
+  border-left-color: #d69e2e;
+  background: linear-gradient(to right, #fffff0 0%, white 100%);
+}
+
+.risk-alert-card.low {
+  border-left-color: #3182ce;
+  background: linear-gradient(to right, #ebf8ff 0%, white 100%);
+}
+
+/* カードヘッダー */
+.alert-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.alert-severity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.critical .alert-severity {
+  color: #c53030;
+}
+
+.high .alert-severity {
+  color: #dd6b20;
+}
+
+.medium .alert-severity {
+  color: #d69e2e;
+}
+
+.low .alert-severity {
+  color: #3182ce;
+}
+
+.alert-dismiss {
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-dismiss:hover {
+  background: #edf2f7;
+  color: #2d3748;
+}
+
+/* アラートメッセージ */
+.alert-message {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+/* 説明 */
+.alert-description {
+  font-size: 0.9375rem;
+  color: #4a5568;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* 案件情報 */
+.alert-project-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.project-name {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.875rem;
+}
+
+.project-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: white;
+  border-radius: 12px;
+  color: #718096;
+  border: 1px solid #e2e8f0;
+}
+
+/* 次のアクション */
+.alert-actions {
+  margin-bottom: 1rem;
+}
+
+.actions-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.actions-title svg {
+  color: #48bb78;
+}
+
+.actions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.actions-list li {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.375rem;
+  background: white;
+  border-left: 3px solid #48bb78;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+/* フッター */
+.alert-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.view-project-button {
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-project-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* スクロールバー */
+.risk-alerts-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.risk-alerts-list::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.risk-alerts-list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.risk-alerts-list::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .risk-alerts-container {
+    margin-bottom: 1rem;
+  }
+
+  .risk-alerts-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-title h2 {
+    font-size: 1rem;
+  }
+
+  .risk-alerts-list {
+    padding: 1rem;
+    max-height: 400px;
+  }
+
+  .risk-alert-card {
+    padding: 1rem;
+  }
+
+  .alert-message {
+    font-size: 1rem;
+  }
+
+  .alert-project-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

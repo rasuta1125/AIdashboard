@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import ocrRoutes from "./routes/ocrRoutes.js";
 import emailRoutes from "./routes/emailRoutes.js";
+import riskRoutes from "./routes/riskRoutes.js";
 
 // 環境変数の読み込み
 dotenv.config();
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 // ルートの設定
 app.use("/api/ocr", ocrRoutes);
 app.use("/api/email", emailRoutes);
+app.use("/api/risk", riskRoutes);
 
 // ルートエンドポイント
 app.get("/", (req, res) => {
@@ -41,6 +43,9 @@ app.get("/", (req, res) => {
       emailHealth: "/api/email/health",
       emailGenerate: "POST /api/email/generate",
       emailTaskCompletion: "POST /api/email/task-completion",
+      riskHealth: "/api/risk/health",
+      riskCheck: "POST /api/risk/check",
+      riskCheckWithAI: "POST /api/risk/check-with-ai",
     },
   });
 });
@@ -108,6 +113,9 @@ app.listen(PORT, () => {
   console.log(`  GET  /api/email/health - Email APIヘルスチェック`);
   console.log(`  POST /api/email/generate - メール生成`);
   console.log(`  POST /api/email/task-completion - タスク完了メール生成`);
+  console.log(`  GET  /api/risk/health - Risk APIヘルスチェック`);
+  console.log(`  POST /api/risk/check - リスクチェック`);
+  console.log(`  POST /api/risk/check-with-ai - AIリスクチェック`);
   console.log("\n✨ サーバーが起動しました！\n");
 });
 

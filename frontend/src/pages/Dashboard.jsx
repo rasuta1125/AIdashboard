@@ -1,15 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useNavigate } from "react-router-dom";
-import { Calendar, TrendingUp } from "lucide-react";
+import { Calendar, TrendingUp, RefreshCw, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { mockProjects, PROJECT_STATUSES } from "../utils/mockData";
+import { mockProjects, mockTasks, mockContacts, PROJECT_STATUSES } from "../utils/mockData";
+import { checkRisksWithAI } from "../utils/api";
+import RiskAlerts from "../components/RiskAlerts";
 import "../styles/Dashboard.css";
 
 const Dashboard = () => {
   const [projects, setProjects] = useState(mockProjects);
+  const [riskAlerts, setRiskAlerts] = useState([]);
+  const [isCheckingRisks, setIsCheckingRisks] = useState(false);
   const navigate = useNavigate();
+
+  // 初回マウント時にリスクチェック
+  useEffect(() => {
+    handleRiskCheck();
+  }, []);
+
+  // リスクチェック処理
+  const handleRiskCheck = async () => {
+    setIsCheckingRisks(true);
+
+    try {
+      // タスクマップを作成
+      const tasksMap = {};
+      Object.keys(mockTasks).forEach((projectId) => {
+        tasksMap[projectId] = mockTasks[projectId];
+      });
+
+      // 関係者マップを作成
+      const contactsMap = {};
+      Object.keys(mockContacts).forEach((projectId) => {
+        contactsMap[projectId] = mockContacts[projectId];
+      });
+
+      console.log("リスクチェック開始...");
+
+      // AIリスクチェックを実行
+      const result = await checkRisksWithAI({
+        projects: projects,
+        tasksMap: tasksMap,
+        contactsMap: contactsMap,
+      });
+
+      console.log("リスクチェック完了:", result);
+
+      if (result.success && result.alerts) {
+        setRiskAlerts(result.alerts);
+      }
+    } catch (error) {
+      console.error("リスクチェックエラー:", error);
+      // エラーは表示しない（バックグラウンド処理）
+    } finally {
+      setIsCheckingRisks(false);
+    }
+  };
+
+  // アラートを閉じる
+  const handleDismissAlert = (index) => {
+    setRiskAlerts((alerts) => alerts.filter((_, i) => i !== index));
+  };
+
+  // 案件を表示
+  const handleViewProject = (projectId) => {
+    navigate(`/project/${projectId}`);
+  };
 
   // ドラッグ終了時の処理
   const onDragEnd = (result) => {
@@ -84,10 +142,51 @@ const Dashboard = () => {
     return "";
   };
 
+  // プロジェクトのリスクバッジを取得
+  const getProjectRiskBadge = (projectId) => {
+    const projectRisks = riskAlerts.filter(
+      (alert) => alert.projectId === projectId
+    );
+
+    if (projectRisks.length === 0) return null;
+
+    // 最も高い severity を選択
+    const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+    const highestRisk = projectRisks.reduce((max, risk) => {
+      return severityOrder[risk.severity] > severityOrder[max.severity]
+        ? risk
+        : max;
+    }, projectRisks[0]);
+
+    const severityLabels = {
+      critical: "緊急",
+      high: "重要",
+      medium: "注意",
+      low: "確認",
+    };
+
+    return {
+      severity: highestRisk.severity,
+      label: severityLabels[highestRisk.severity],
+      count: projectRisks.length,
+    };
+  };
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>📊 案件管理ダッシュボード</h1>
+        <div className="header-top">
+          <h1>📊 案件管理ダッシュボード</h1>
+          <button
+            className={`risk-check-button ${isCheckingRisks ? "loading" : ""}`}
+            onClick={handleRiskCheck}
+            disabled={isCheckingRisks}
+            title="リスクチェック"
+          >
+            <RefreshCw size={18} className={isCheckingRisks ? "spinning" : ""} />
+            {isCheckingRisks ? "チェック中..." : "リスクチェック"}
+          </button>
+        </div>
         <div className="header-stats">
           <div className="stat-card">
             <span className="stat-label">総案件数</span>
@@ -107,8 +206,23 @@ const Dashboard = () => {
               {projects.filter((p) => p.status === "決済完了").length}
             </span>
           </div>
+          {riskAlerts.length > 0 && (
+            <div className="stat-card risk-stat">
+              <span className="stat-label">リスク検出</span>
+              <span className="stat-value risk-value">{riskAlerts.length}</span>
+            </div>
+          )}
         </div>
       </header>
+
+      {/* リスクアラート表示 */}
+      {riskAlerts.length > 0 && (
+        <RiskAlerts
+          alerts={riskAlerts}
+          onDismiss={handleDismissAlert}
+          onViewProject={handleViewProject}
+        />
+      )}
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-board">
@@ -160,6 +274,21 @@ const Dashboard = () => {
                                 <h3 className="project-name">
                                   {project.project_name}
                                 </h3>
+
+                                {/* リスクバッジ表示 */}
+                                {(() => {
+                                  const riskBadge = getProjectRiskBadge(project.project_id);
+                                  if (riskBadge) {
+                                    return (
+                                      <div className={`risk-badge ${riskBadge.severity}`}>
+                                        <AlertTriangle size={12} />
+                                        {riskBadge.label}
+                                        {riskBadge.count > 1 && ` (${riskBadge.count}件)`}
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
 
                                 <div className="project-info">
                                   <div className="info-row">

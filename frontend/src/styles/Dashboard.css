@@ -14,10 +14,46 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
 .dashboard-header h1 {
-  margin: 0 0 1.5rem 0;
+  margin: 0;
   font-size: 2rem;
   color: #1a202c;
+}
+
+.risk-check-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.risk-check-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 137, 54, 0.4);
+}
+
+.risk-check-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.risk-check-button .spinning {
+  animation: spin 1s linear infinite;
 }
 
 .header-stats {
@@ -45,6 +81,26 @@
 .stat-value {
   font-size: 2rem;
   font-weight: bold;
+}
+
+/* リスク統計カード */
+.stat-card.risk-stat {
+  background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.stat-value.risk-value {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(252, 129, 129, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(252, 129, 129, 0.8);
+  }
 }
 
 /* カンバンボード */
@@ -187,6 +243,52 @@
 .info-value.price {
   font-weight: 600;
   color: #2b6cb0;
+}
+
+/* リスクバッジ */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+.risk-badge.critical {
+  background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.4);
+}
+
+.risk-badge.high {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(237, 137, 54, 0.4);
+}
+
+.risk-badge.medium {
+  background: linear-gradient(135deg, #f6e05e 0%, #ecc94b 100%);
+  color: #744210;
+  box-shadow: 0 2px 8px rgba(236, 201, 75, 0.4);
+}
+
+.risk-badge.low {
+  background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.4);
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* 決済までの日数表示 */
