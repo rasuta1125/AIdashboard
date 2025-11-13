@@ -17,6 +17,8 @@ import {
   Loader2,
   Sparkles,
   Send,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -29,6 +31,7 @@ import {
 } from "../utils/mockData";
 import { uploadContractPDF, generateTaskCompletionEmail, generateEmail } from "../utils/api";
 import EmailModal from "../components/EmailModal";
+import ContactModal from "../components/ContactModal";
 import "../styles/ProjectDetail.css";
 
 const ProjectDetail = () => {
@@ -49,6 +52,11 @@ const ProjectDetail = () => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [generatedEmail, setGeneratedEmail] = useState(null);
   const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
+  
+  // 関係者モーダル関連
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState(null);
+  const [contactModalMode, setContactModalMode] = useState("add");
 
   useEffect(() => {
     // プロジェクトデータを取得（実際はAPIから取得）
@@ -115,6 +123,52 @@ const ProjectDetail = () => {
       const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
       return diffDays <= 3;
     }).length;
+  };
+
+  // 関係者の追加
+  const handleAddContact = () => {
+    setContactModalMode("add");
+    setEditingContact(null);
+    setIsContactModalOpen(true);
+  };
+
+  // 関係者の編集
+  const handleEditContact = (contact) => {
+    setContactModalMode("edit");
+    setEditingContact(contact);
+    setIsContactModalOpen(true);
+  };
+
+  // 関係者の保存（追加または更新）
+  const handleSaveContact = (contactData) => {
+    if (contactModalMode === "add") {
+      // 新規追加
+      setContacts([...contacts, contactData]);
+      console.log("関係者を追加しました:", contactData);
+    } else {
+      // 更新
+      setContacts(
+        contacts.map((c) =>
+          c.contact_id === contactData.contact_id ? contactData : c
+        )
+      );
+      console.log("関係者を更新しました:", contactData);
+    }
+    // 実際のアプリケーションでは、ここでAPIを呼び出してDBを更新
+  };
+
+  // 関係者の削除
+  const handleDeleteContact = (contactId) => {
+    const contact = contacts.find((c) => c.contact_id === contactId);
+    if (
+      window.confirm(
+        `${contact?.name}さんの情報を削除してもよろしいですか？`
+      )
+    ) {
+      setContacts(contacts.filter((c) => c.contact_id !== contactId));
+      console.log(`関係者 ${contactId} を削除しました`);
+      // 実際のアプリケーションでは、ここでAPIを呼び出してDBを更新
+    }
   };
 
   // ファイルアップロードボタンのクリック処理
@@ -576,7 +630,7 @@ const ProjectDetail = () => {
                   <Send size={16} />
                   メール作成
                 </button>
-                <button className="add-button-small">
+                <button className="add-button-small" onClick={handleAddContact}>
                   <Plus size={16} />
                 </button>
               </div>
@@ -586,27 +640,52 @@ const ProjectDetail = () => {
               {contacts.length === 0 ? (
                 <div className="empty-state">
                   <p>関係者情報がありません</p>
+                  <button className="empty-add-button" onClick={handleAddContact}>
+                    <Plus size={18} />
+                    関係者を追加
+                  </button>
                 </div>
               ) : (
                 contacts.map((contact) => (
                   <div key={contact.contact_id} className="contact-item">
-                    <div className="contact-header">
-                      <span className="contact-role">{contact.role}</span>
-                      <span className="contact-name">{contact.name}</span>
+                    <div className="contact-content">
+                      <div className="contact-header">
+                        <span className="contact-role">{contact.role}</span>
+                        <span className="contact-name">{contact.name}</span>
+                      </div>
+                      {contact.company && (
+                        <div className="contact-company">{contact.company}</div>
+                      )}
+                      <div className="contact-details">
+                        {contact.phone && (
+                          <div className="contact-detail">
+                            <Phone size={14} />
+                            <span>{contact.phone}</span>
+                          </div>
+                        )}
+                        {contact.email && (
+                          <div className="contact-detail">
+                            <MailIcon size={14} />
+                            <span>{contact.email}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="contact-details">
-                      {contact.phone && (
-                        <div className="contact-detail">
-                          <Phone size={14} />
-                          <span>{contact.phone}</span>
-                        </div>
-                      )}
-                      {contact.email && (
-                        <div className="contact-detail">
-                          <MailIcon size={14} />
-                          <span>{contact.email}</span>
-                        </div>
-                      )}
+                    <div className="contact-actions">
+                      <button
+                        className="icon-button edit-button"
+                        onClick={() => handleEditContact(contact)}
+                        title="編集"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        className="icon-button delete-button"
+                        onClick={() => handleDeleteContact(contact.contact_id)}
+                        title="削除"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
                 ))
@@ -663,6 +742,15 @@ const ProjectDetail = () => {
         onClose={() => setIsEmailModalOpen(false)}
         email={generatedEmail}
         isGenerating={isGeneratingEmail}
+      />
+
+      {/* 関係者モーダル */}
+      <ContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        onSave={handleSaveContact}
+        contact={editingContact}
+        mode={contactModalMode}
       />
     </div>
   );
