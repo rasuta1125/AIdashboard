@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useNavigate } from "react-router-dom";
-import { Calendar, TrendingUp, RefreshCw, AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { Calendar, TrendingUp, RefreshCw, AlertTriangle, Plus, Trash2, Upload, FileText, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { mockProjects, mockTasks, mockContacts, PROJECT_STATUSES } from "../utils/mockData";
-import { checkRisksWithAI } from "../utils/api";
+import { checkRisksWithAI, uploadContractPDF } from "../utils/api";
 import RiskAlerts from "../components/RiskAlerts";
 import ProjectModal from "../components/ProjectModal";
 import "../styles/Dashboard.css";
@@ -21,6 +21,8 @@ const Dashboard = () => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [projectModalMode, setProjectModalMode] = useState("add");
+  const [isUploadingPDF, setIsUploadingPDF] = useState(false);
+  const pdfInputRef = useRef(null);
   const navigate = useNavigate();
 
   // projectsが変更されたらlocalStorageに保存
@@ -165,6 +167,92 @@ const Dashboard = () => {
     }
   };
 
+  // PDFアップロードボタンのクリック
+  const handlePDFUploadClick = () => {
+    pdfInputRef.current?.click();
+  };
+
+  // PDFファイル選択時の処理
+  const handlePDFFileSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // ファイルタイプチェック
+    if (file.type !== "application/pdf") {
+      alert("PDFファイルのみアップロード可能です");
+      return;
+    }
+
+    // ファイルサイズチェック（10MB）
+    if (file.size > 10 * 1024 * 1024) {
+      alert("ファイルサイズは10MB以下にしてください");
+      return;
+    }
+
+    setIsUploadingPDF(true);
+
+    try {
+      console.log("PDFアップロード開始:", file.name);
+
+      // AI-OCR処理を実行
+      const result = await uploadContractPDF(file);
+
+      if (result.success && result.data) {
+        console.log("AI-OCR抽出結果:", result.data);
+
+        // 抽出されたデータから案件を自動作成
+        const newProject = {
+          project_id: Date.now(), // 一時ID
+          project_name: result.data.property_address || `新規案件_${format(new Date(), 'MMdd_HHmm')}`,
+          buyer_name: "（未設定）", // PDFから抽出できない場合のデフォルト
+          seller_name: "（未設定）",
+          property_address: result.data.property_address || "",
+          property_price: result.data.property_price || null,
+          deposit_amount: result.data.deposit_amount || null,
+          contract_date: result.data.contract_date || null,
+          settlement_date: result.data.settlement_date || null,
+          loan_special_clause_deadline: result.data.loan_special_clause_deadline || null,
+          status: "契約前",
+          sales_rep_id: 1,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        // 案件リストに追加
+        setProjects([...projects, newProject]);
+
+        alert(
+          `✅ 案件を自動作成しました！\n\n` +
+          `案件名: ${newProject.project_name}\n` +
+          `契約日: ${newProject.contract_date || '未設定'}\n` +
+          `決済日: ${newProject.settlement_date || '未設定'}\n` +
+          `売買代金: ${newProject.property_price ? '¥' + new Intl.NumberFormat('ja-JP').format(newProject.property_price) : '未設定'}\n\n` +
+          `案件をクリックして詳細を編集できます。`
+        );
+
+        // 作成した案件の詳細画面に移動
+        setTimeout(() => {
+          navigate(`/project/${newProject.project_id}`);
+        }, 1000);
+      } else {
+        throw new Error(result.error || "AI-OCR処理に失敗しました");
+      }
+    } catch (error) {
+      console.error("PDFアップロードエラー:", error);
+      alert(
+        `❌ PDFの処理に失敗しました\n\n` +
+        `エラー: ${error.message}\n\n` +
+        `手動で案件を作成してください。`
+      );
+    } finally {
+      setIsUploadingPDF(false);
+      // ファイル入力をリセット
+      if (pdfInputRef.current) {
+        pdfInputRef.current.value = "";
+      }
+    }
+  };
+
   // 金額をフォーマット
   const formatPrice = (price) => {
     return new Intl.NumberFormat("ja-JP").format(price);
@@ -231,6 +319,24 @@ const Dashboard = () => {
         <div className="header-top">
           <h1>📊 案件管理ダッシュボード</h1>
           <div className="header-actions">
+            <button
+              className="pdf-upload-button"
+              onClick={handlePDFUploadClick}
+              disabled={isUploadingPDF}
+              title="契約書PDFをアップロードしてAIで案件を自動作成"
+            >
+              {isUploadingPDF ? (
+                <>
+                  <Loader2 size={18} className="spinning" />
+                  処理中...
+                </>
+              ) : (
+                <>
+                  <FileText size={18} />
+                  ＋AIで案件作成
+                </>
+              )}
+            </button>
             <button
               className="add-project-button"
               onClick={handleAddProject}
@@ -417,6 +523,15 @@ const Dashboard = () => {
           ))}
         </div>
       </DragDropContext>
+
+      {/* 隠しPDFファイル入力 */}
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept="application/pdf"
+        onChange={handlePDFFileSelect}
+        style={{ display: "none" }}
+      />
 
       {/* 案件作成/編集モーダル */}
       <ProjectModal

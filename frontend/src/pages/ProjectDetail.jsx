@@ -387,24 +387,6 @@ const ProjectDetail = () => {
             <h2>📋 案件基本情報</h2>
             <div className="header-buttons">
               <button
-                className="upload-button"
-                onClick={handleUploadClick}
-                disabled={isUploading}
-                title="契約書PDFをアップロードして情報を自動入力"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 size={18} className="spinning" />
-                    処理中...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={18} />
-                    AI-OCR
-                  </>
-                )}
-              </button>
-              <button
                 className="edit-button"
                 onClick={() => setIsEditing(!isEditing)}
               >
