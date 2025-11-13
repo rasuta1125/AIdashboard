@@ -59,8 +59,10 @@ const ProjectDetail = () => {
   const [contactModalMode, setContactModalMode] = useState("add");
 
   useEffect(() => {
-    // プロジェクトデータを取得（実際はAPIから取得）
-    const projectData = mockProjects.find(
+    // localStorageから案件データを取得
+    const savedProjects = localStorage.getItem('projects');
+    const projects = savedProjects ? JSON.parse(savedProjects) : mockProjects;
+    const projectData = projects.find(
       (p) => p.project_id === parseInt(projectId)
     );
     setProject(projectData);
@@ -68,8 +70,10 @@ const ProjectDetail = () => {
     // タスクデータを取得
     setTasks(mockTasks[projectId] || []);
 
-    // 関係者データを取得
-    setContacts(mockContacts[projectId] || []);
+    // localStorageから関係者データを取得
+    const savedContacts = localStorage.getItem('contacts');
+    const allContacts = savedContacts ? JSON.parse(savedContacts) : mockContacts;
+    setContacts(allContacts[projectId] || []);
 
     // 書類データを取得
     setDocuments(mockDocuments[projectId] || []);
@@ -141,20 +145,26 @@ const ProjectDetail = () => {
 
   // 関係者の保存（追加または更新）
   const handleSaveContact = (contactData) => {
+    let updatedContacts;
     if (contactModalMode === "add") {
       // 新規追加
-      setContacts([...contacts, contactData]);
+      updatedContacts = [...contacts, contactData];
+      setContacts(updatedContacts);
       console.log("関係者を追加しました:", contactData);
     } else {
       // 更新
-      setContacts(
-        contacts.map((c) =>
-          c.contact_id === contactData.contact_id ? contactData : c
-        )
+      updatedContacts = contacts.map((c) =>
+        c.contact_id === contactData.contact_id ? contactData : c
       );
+      setContacts(updatedContacts);
       console.log("関係者を更新しました:", contactData);
     }
-    // 実際のアプリケーションでは、ここでAPIを呼び出してDBを更新
+    
+    // localStorageに保存
+    const savedContacts = localStorage.getItem('contacts');
+    const allContacts = savedContacts ? JSON.parse(savedContacts) : {};
+    allContacts[projectId] = updatedContacts;
+    localStorage.setItem('contacts', JSON.stringify(allContacts));
   };
 
   // 関係者の削除
@@ -165,9 +175,15 @@ const ProjectDetail = () => {
         `${contact?.name}さんの情報を削除してもよろしいですか？`
       )
     ) {
-      setContacts(contacts.filter((c) => c.contact_id !== contactId));
+      const updatedContacts = contacts.filter((c) => c.contact_id !== contactId);
+      setContacts(updatedContacts);
       console.log(`関係者 ${contactId} を削除しました`);
-      // 実際のアプリケーションでは、ここでAPIを呼び出してDBを更新
+      
+      // localStorageに保存
+      const savedContacts = localStorage.getItem('contacts');
+      const allContacts = savedContacts ? JSON.parse(savedContacts) : {};
+      allContacts[projectId] = updatedContacts;
+      localStorage.setItem('contacts', JSON.stringify(allContacts));
     }
   };
 
@@ -625,12 +641,12 @@ const ProjectDetail = () => {
                 <button 
                   className="save-contacts-button"
                   onClick={() => {
-                    alert('関係者情報を保存しました！\n（実際のアプリケーションではAPIを呼び出してDBに保存されます）');
+                    alert('関係者情報はすでに保存されています！\n\n追加・編集・削除時に自動的に保存されます。');
                   }}
-                  title="関係者情報を保存"
+                  title="関係者情報を保存（自動保存済み）"
                 >
                   <CheckCircle2 size={16} />
-                  保存
+                  保存済み
                 </button>
                 <button 
                   className="email-create-button"

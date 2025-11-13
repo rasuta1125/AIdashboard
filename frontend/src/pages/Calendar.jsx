@@ -31,13 +31,19 @@ const Calendar = () => {
   const [scheduleSuggestion, setScheduleSuggestion] = useState(null);
   const navigate = useNavigate();
 
+  // localStorageから案件データを読み込む
+  const projects = useMemo(() => {
+    const savedProjects = localStorage.getItem('projects');
+    return savedProjects ? JSON.parse(savedProjects) : mockProjects;
+  }, []);
+
   // カレンダーイベントの抽出
   const calendarEvents = useMemo(() => {
     const events = [];
 
     // プロジェクトの重要日程を追加
     if (filters.showProjects) {
-      mockProjects.forEach((project) => {
+      projects.forEach((project) => {
         // 契約日
         if (project.contract_date) {
           events.push({
@@ -87,7 +93,7 @@ const Calendar = () => {
     // タスクの期限を追加
     if (filters.showTasks) {
       Object.entries(mockTasks).forEach(([projectId, tasks]) => {
-        const project = mockProjects.find(
+        const project = projects.find(
           (p) => p.project_id === parseInt(projectId)
         );
         if (!project) return;
@@ -118,7 +124,7 @@ const Calendar = () => {
     }
 
     return events.sort((a, b) => a.date - b.date);
-  }, [filters]);
+  }, [filters, projects]);
 
   // 月間ビューの日付配列を生成
   const monthDays = useMemo(() => {
@@ -211,7 +217,7 @@ const Calendar = () => {
 
       const result = await generateScheduleSuggestion({
         events: upcomingEvents,
-        projects: mockProjects,
+        projects: projects,
         currentDate: new Date().toISOString(),
       });
 

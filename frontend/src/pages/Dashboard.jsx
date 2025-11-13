@@ -11,13 +11,22 @@ import ProjectModal from "../components/ProjectModal";
 import "../styles/Dashboard.css";
 
 const Dashboard = () => {
-  const [projects, setProjects] = useState(mockProjects);
+  // localStorageから案件データを読み込む
+  const [projects, setProjects] = useState(() => {
+    const savedProjects = localStorage.getItem('projects');
+    return savedProjects ? JSON.parse(savedProjects) : mockProjects;
+  });
   const [riskAlerts, setRiskAlerts] = useState([]);
   const [isCheckingRisks, setIsCheckingRisks] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [projectModalMode, setProjectModalMode] = useState("add");
   const navigate = useNavigate();
+
+  // projectsが変更されたらlocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
 
   // 初回マウント時にリスクチェック
   useEffect(() => {
