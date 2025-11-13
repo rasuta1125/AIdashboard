@@ -623,6 +623,16 @@ const ProjectDetail = () => {
               <h2>👥 関係者</h2>
               <div className="header-buttons">
                 <button 
+                  className="save-contacts-button"
+                  onClick={() => {
+                    alert('関係者情報を保存しました！\n（実際のアプリケーションではAPIを呼び出してDBに保存されます）');
+                  }}
+                  title="関係者情報を保存"
+                >
+                  <CheckCircle2 size={16} />
+                  保存
+                </button>
+                <button 
                   className="email-create-button"
                   onClick={handleEmailCreate}
                   title="AIで連絡メールを作成"

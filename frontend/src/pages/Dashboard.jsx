@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useNavigate } from "react-router-dom";
-import { Calendar, TrendingUp, RefreshCw, AlertTriangle } from "lucide-react";
+import { Calendar, TrendingUp, RefreshCw, AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { mockProjects, mockTasks, mockContacts, PROJECT_STATUSES } from "../utils/mockData";
 import { checkRisksWithAI } from "../utils/api";
 import RiskAlerts from "../components/RiskAlerts";
+import ProjectModal from "../components/ProjectModal";
 import "../styles/Dashboard.css";
 
 const Dashboard = () => {
   const [projects, setProjects] = useState(mockProjects);
   const [riskAlerts, setRiskAlerts] = useState([]);
   const [isCheckingRisks, setIsCheckingRisks] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [projectModalMode, setProjectModalMode] = useState("add");
   const navigate = useNavigate();
 
   // 初回マウント時にリスクチェック
@@ -112,6 +116,46 @@ const Dashboard = () => {
     navigate(`/project/${projectId}`);
   };
 
+  // 案件の追加
+  const handleAddProject = () => {
+    setProjectModalMode("add");
+    setEditingProject(null);
+    setIsProjectModalOpen(true);
+  };
+
+  // 案件の保存（追加または更新）
+  const handleSaveProject = (projectData) => {
+    if (projectModalMode === "add") {
+      // 新規追加
+      setProjects([...projects, projectData]);
+      console.log("案件を追加しました:", projectData);
+    } else {
+      // 更新
+      setProjects(
+        projects.map((p) =>
+          p.project_id === projectData.project_id ? projectData : p
+        )
+      );
+      console.log("案件を更新しました:", projectData);
+    }
+    // 実際のアプリケーションでは、ここでAPIを呼び出してDBを更新
+  };
+
+  // 案件の削除
+  const handleDeleteProject = (e, projectId) => {
+    e.stopPropagation(); // カードクリックイベントの伝播を停止
+    const project = projects.find((p) => p.project_id === projectId);
+    if (
+      window.confirm(
+        `「${project?.project_name}」を削除してもよろしいですか？\n\nこの操作は取り消せません。`
+      )
+    ) {
+      setProjects(projects.filter((p) => p.project_id !== projectId));
+      console.log(`案件 ${projectId} を削除しました`);
+      // 実際のアプリケーションでは、ここでAPIを呼び出してDBから削除
+    }
+  };
+
   // 金額をフォーマット
   const formatPrice = (price) => {
     return new Intl.NumberFormat("ja-JP").format(price);
@@ -178,6 +222,14 @@ const Dashboard = () => {
         <div className="header-top">
           <h1>📊 案件管理ダッシュボード</h1>
           <div className="header-actions">
+            <button
+              className="add-project-button"
+              onClick={handleAddProject}
+              title="新規案件を作成"
+            >
+              <Plus size={18} />
+              案件追加
+            </button>
             <button
               className="calendar-nav-button"
               onClick={() => navigate("/calendar")}
@@ -281,9 +333,18 @@ const Dashboard = () => {
                                   handleProjectClick(project.project_id)
                                 }
                               >
-                                <h3 className="project-name">
-                                  {project.project_name}
-                                </h3>
+                                <div className="project-card-header">
+                                  <h3 className="project-name">
+                                    {project.project_name}
+                                  </h3>
+                                  <button
+                                    className="delete-project-button"
+                                    onClick={(e) => handleDeleteProject(e, project.project_id)}
+                                    title="案件を削除"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
 
                                 {/* リスクバッジ表示 */}
                                 {(() => {
@@ -347,6 +408,15 @@ const Dashboard = () => {
           ))}
         </div>
       </DragDropContext>
+
+      {/* 案件作成/編集モーダル */}
+      <ProjectModal
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        onSave={handleSaveProject}
+        project={editingProject}
+        mode={projectModalMode}
+      />
     </div>
   );
 };
