@@ -290,12 +290,13 @@
 
 .day-cell {
   background: white;
-  padding: 0.5rem;
-  min-height: 120px;
+  padding: 0.4rem;
+  min-height: 90px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+  font-size: 0.85rem;
 }
 
 .day-cell:hover {
@@ -338,9 +339,9 @@
 }
 
 .event-badge {
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -553,10 +554,10 @@
 .event-card {
   background: white;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.875rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -569,12 +570,14 @@
 
 .event-indicator {
   width: 4px;
-  height: 60px;
+  height: 50px;
   border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .event-info {
   flex: 1;
+  min-width: 0;
 }
 
 .event-info .event-title {
@@ -614,20 +617,50 @@
   color: #4a5568;
 }
 
+.event-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .view-project-button {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.875rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
+  font-size: 0.8125rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .view-project-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.delete-event-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #e53e3e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-event-button:hover {
+  background: #fff5f5;
+  border-color: #e53e3e;
+  transform: scale(1.1);
 }
 
 /* ========== イベント詳細モーダル ========== */

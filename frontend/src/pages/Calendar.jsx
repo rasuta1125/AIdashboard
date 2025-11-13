@@ -8,6 +8,7 @@ import {
   Clock,
   Filter,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -181,6 +182,18 @@ const Calendar = () => {
   // 案件に移動
   const navigateToProject = (projectId) => {
     navigate(`/project/${projectId}`);
+  };
+
+  // イベント削除ハンドラー
+  const handleDeleteEvent = (e, event) => {
+    e.stopPropagation();
+    
+    if (window.confirm(`「${event.title}」を削除してもよろしいですか？`)) {
+      console.log("イベントを削除:", event.id);
+      // 実際のアプリケーションでは、ここでAPIを呼び出してDBから削除
+      // 現在はモックデータなので、ページリロードで元に戻ります
+      alert("イベントを削除しました\n（モックデータのため、リロードで復元されます）");
+    }
   };
 
   // AIスケジュール提案を生成
@@ -548,15 +561,24 @@ const DayView = ({ selectedDate, events, handleEventClick, navigateToProject }) 
                         </span>
                       )}
                     </div>
-                    <button
-                      className="view-project-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateToProject(event.projectId);
-                      }}
-                    >
-                      案件を表示
-                    </button>
+                    <div className="event-actions">
+                      <button
+                        className="view-project-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigateToProject(event.projectId);
+                        }}
+                      >
+                        案件を表示
+                      </button>
+                      <button
+                        className="delete-event-button"
+                        onClick={(e) => handleDeleteEvent(e, event)}
+                        title="削除"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
