@@ -442,7 +442,7 @@
 }
 
 .contact-item {
-  display: flex;
+  display: flex !important;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
@@ -451,6 +451,7 @@
   border-radius: 8px;
   border-left: 4px solid #667eea;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .contact-item:hover {
@@ -508,13 +509,14 @@
 }
 
 .contact-actions {
-  display: flex;
+  display: flex !important;
   gap: 0.5rem;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .icon-button {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   width: 32px;
@@ -524,6 +526,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .icon-button:hover {
@@ -533,20 +536,24 @@
 
 .icon-button.edit-button {
   color: #667eea;
+  border: 1px solid #e0e7ff;
 }
 
 .icon-button.edit-button:hover {
   background: #eef2ff;
   color: #5a67d8;
+  border-color: #667eea;
 }
 
 .icon-button.delete-button {
   color: #e53e3e;
+  border: 1px solid #fee;
 }
 
 .icon-button.delete-button:hover {
   background: #fff5f5;
   color: #c53030;
+  border-color: #e53e3e;
 }
 
 .empty-add-button {
