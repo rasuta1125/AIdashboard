@@ -12,7 +12,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 export async function generateScheduleSuggestion(events, projects, currentDate) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // プロンプトを構築
     const prompt = `
@@ -130,7 +130,7 @@ ${JSON.stringify(
  */
 export async function suggestTaskSchedule(project, existingEvents) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `
 不動産売買案件のタスクスケジュールを最適化してください。

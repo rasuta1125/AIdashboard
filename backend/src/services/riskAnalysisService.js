@@ -166,8 +166,8 @@ export async function generateRiskAlert(riskData) {
   try {
     const { project, risks, contacts } = riskData;
 
-    // Gemini 1.5 Proモデルを使用
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    // Gemini 2.0 Flashモデルを使用（高速）
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // リスク情報を文字列化
     let riskDescription = "";

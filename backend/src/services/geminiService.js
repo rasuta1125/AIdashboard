@@ -15,8 +15,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 export async function extractContractInfoFromPDF(filePath, mimeType) {
   try {
-    // Gemini 1.5 Proモデルを使用（PDFサポート）
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    // Gemini 2.0 Flashモデルを使用（PDFサポート、高速）
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // PDFファイルを読み込む
     const fileBuffer = fs.readFileSync(filePath);
@@ -114,7 +114,7 @@ export async function extractContractInfoFromPDF(filePath, mimeType) {
  */
 export async function extractContractInfoFromText(text) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `
 あなたは不動産売買契約書を分析する専門AIです。

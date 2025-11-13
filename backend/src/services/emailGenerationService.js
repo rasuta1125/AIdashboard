@@ -25,8 +25,8 @@ export async function generateContactEmail(context) {
       propertyPrice,
     } = context;
 
-    // Gemini 1.5 Proモデルを使用
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    // Gemini 2.0 Flashモデルを使用（高速）
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // メール生成のプロンプト
     const prompt = `
