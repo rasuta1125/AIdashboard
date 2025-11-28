@@ -3,6 +3,7 @@
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  background-color: #ffffff;
 }
 
 .project-modal .modal-header {
@@ -26,6 +27,7 @@
 
 .project-form {
   padding: 24px;
+  background-color: #ffffff;
 }
 
 .form-section {
@@ -91,6 +93,8 @@
   border-radius: 8px;
   transition: all 0.2s;
   font-family: inherit;
+  background-color: #ffffff;
+  color: #1f2937;
 }
 
 .form-group textarea {

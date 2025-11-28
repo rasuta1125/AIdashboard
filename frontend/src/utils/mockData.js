@@ -4,7 +4,7 @@ export const mockProjects = [
   {
     project_id: 1,
     project_name: "A様邸 戸建売買",
-    status: "契約直後",
+    status: "契約済み",
     contract_date: "2025-11-01",
     settlement_date: "2025-12-15",
     property_price: 45000000,
@@ -206,7 +206,8 @@ export const mockDocuments = {
 
 // ステータスの定義
 export const PROJECT_STATUSES = [
-  "契約直後",
+  "契約前",
+  "契約済み",
   "融資承認待ち",
   "決済準備中",
   "決済完了",

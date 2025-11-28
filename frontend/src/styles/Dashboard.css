@@ -202,9 +202,21 @@
 /* カンバンボード */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 1.5rem;
   align-items: start;
+}
+
+@media (max-width: 1600px) {
+  .kanban-board {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .kanban-board {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* カンバン列 */
@@ -443,12 +455,6 @@
 }
 
 /* レスポンシブデザイン */
-@media (max-width: 1200px) {
-  .kanban-board {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
   .dashboard {
     padding: 1rem;

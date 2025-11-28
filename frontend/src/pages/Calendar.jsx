@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns";
 import { ja } from "date-fns/locale";
-import { mockProjects, mockTasks } from "../utils/mockData";
+import { mockProjects, mockTasks, PROJECT_STATUSES } from "../utils/mockData";
 import { generateScheduleSuggestion } from "../utils/api";
 import "../styles/Calendar.css";
 
@@ -32,10 +32,15 @@ const Calendar = () => {
   const navigate = useNavigate();
 
   // localStorageから案件データを読み込む
-  const projects = useMemo(() => {
+  const [projects, setProjects] = useState(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : mockProjects;
-  }, []);
+  });
+
+  // projectsが変更されたらlocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
 
   // カレンダーイベントの抽出
   const calendarEvents = useMemo(() => {
@@ -200,6 +205,21 @@ const Calendar = () => {
       // 現在はモックデータなので、ページリロードで元に戻ります
       alert("イベントを削除しました\n（モックデータのため、リロードで復元されます）");
     }
+  };
+
+  // ステータス更新関数
+  const handleStatusChange = (projectId, newStatus) => {
+    setProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.project_id === projectId
+          ? { ...project, status: newStatus }
+          : project
+      )
+    );
+    // モーダルを閉じる
+    setShowEventModal(false);
+    // 成功メッセージ
+    alert(`案件のステータスを「${newStatus}」に変更しました`);
   };
 
   // AIスケジュール提案を生成
@@ -384,6 +404,8 @@ const Calendar = () => {
           event={selectedEvent}
           onClose={() => setShowEventModal(false)}
           navigateToProject={navigateToProject}
+          onStatusChange={handleStatusChange}
+          currentProject={projects.find(p => p.project_id === selectedEvent.projectId)}
         />
       )}
     </div>
@@ -597,12 +619,20 @@ const DayView = ({ selectedDate, events, handleEventClick, navigateToProject }) 
 };
 
 // イベント詳細モーダル
-const EventModal = ({ event, onClose, navigateToProject }) => {
+const EventModal = ({ event, onClose, navigateToProject, onStatusChange, currentProject }) => {
+  const [selectedStatus, setSelectedStatus] = useState(currentProject?.status || "");
+  
   const eventTypeLabels = {
     contract: "契約",
     settlement: "決済",
     deadline: "期限",
     task: "タスク",
+  };
+
+  const handleStatusUpdate = () => {
+    if (selectedStatus && selectedStatus !== currentProject?.status) {
+      onStatusChange(event.projectId, selectedStatus);
+    }
   };
 
   return (
@@ -633,6 +663,23 @@ const EventModal = ({ event, onClose, navigateToProject }) => {
             <span className="detail-value">{event.projectName}</span>
           </div>
 
+          {currentProject && (
+            <div className="event-detail-row">
+              <span className="detail-label">ステータス:</span>
+              <select
+                className="status-select"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                {PROJECT_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {event.priority && (
             <div className="event-detail-row">
               <span className="detail-label">優先度:</span>
@@ -651,6 +698,14 @@ const EventModal = ({ event, onClose, navigateToProject }) => {
         </div>
 
         <div className="modal-actions">
+          {currentProject && selectedStatus !== currentProject.status && (
+            <button
+              className="update-status-button"
+              onClick={handleStatusUpdate}
+            >
+              ステータスを更新
+            </button>
+          )}
           <button
             className="primary-button"
             onClick={() => navigateToProject(event.projectId)}
