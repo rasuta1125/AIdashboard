@@ -310,6 +310,54 @@ npm run dev
 
 ブラウザで http://localhost:5173 にアクセスすると、サンプルデータで動作を確認できます。
 
+## 🚀 本番環境デプロイ
+
+このシステムはCloudflare Pages（フロントエンド）とRender（バックエンド）で簡単にデプロイできます。
+
+### クイックスタート（5分で開始）
+
+1. **バックエンドをRenderにデプロイ**（5分）
+   - https://render.com/ で無料アカウント作成
+   - GitHubリポジトリを接続
+   - 環境変数を設定（GEMINI_API_KEY, FRONTEND_URL など）
+   
+2. **フロントエンドをCloudflare Pagesにデプロイ**（3分）
+   - https://dash.cloudflare.com/ でPagesプロジェクトを作成
+   - ビルド設定: `npm run build`
+   - ルートディレクトリ: `frontend`
+   - 環境変数: `VITE_API_BASE_URL`
+
+3. **動作確認**（2分）
+   - バックエンドAPIのヘルスチェック
+   - フロントエンドの表示確認
+   - AI機能のテスト
+
+### 📖 詳細デプロイガイド
+
+完全なデプロイ手順は以下のドキュメントを参照してください：
+
+- **[QUICKSTART_DEPLOYMENT.md](./QUICKSTART_DEPLOYMENT.md)** - 5分で始める簡単デプロイガイド ⚡
+- **[CLOUDFLARE_DEPLOYMENT.md](./CLOUDFLARE_DEPLOYMENT.md)** - Cloudflare/Render完全デプロイガイド 📚
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - 本番環境デプロイメント総合ガイド 🛠️
+
+### 必要なアカウント
+
+| サービス | 用途 | 無料プラン | URL |
+|---------|------|----------|-----|
+| Cloudflare Pages | フロントエンド | ✅ あり | https://dash.cloudflare.com/ |
+| Render | バックエンドAPI | ✅ あり | https://render.com/ |
+| Google AI Studio | Gemini API | ✅ あり | https://makersuite.google.com/ |
+
+### デプロイ後の機能
+
+✅ **すべてのAI機能が動作します**:
+- 契約書AI-OCR（ワンステップ案件作成）
+- 連絡メール自動生成
+- AIリスクアラートシステム
+- AIスケジュール提案
+
+---
+
 ## 📚 ドキュメント
 
 ### 設計書
@@ -319,6 +367,12 @@ npm run dev
 ### 開発ガイド
 - [FRONTEND_README.md](./FRONTEND_README.md) - フロントエンド開発ガイド
 - [backend/README.md](./backend/README.md) - バックエンドAPI仕様
+
+### デプロイガイド ⭐NEW
+- **[QUICKSTART_DEPLOYMENT.md](./QUICKSTART_DEPLOYMENT.md)** - 5分で始める簡単デプロイ
+- **[CLOUDFLARE_DEPLOYMENT.md](./CLOUDFLARE_DEPLOYMENT.md)** - 完全デプロイガイド
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - 本番環境デプロイメントガイド
+- [VERIFICATION_REPORT.md](./VERIFICATION_REPORT.md) - システム動作確認レポート
 
 ### AI機能ガイド
 - [docs/AI_OCR_GUIDE.md](./docs/AI_OCR_GUIDE.md) - 契約書AI-OCR使用ガイド

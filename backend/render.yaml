@@ -1,0 +1,26 @@
+# Render.com デプロイ設定ファイル
+# このファイルは Render でのバックエンド自動デプロイに使用されます
+
+services:
+  - type: web
+    name: real-estate-backend
+    env: node
+    region: oregon # または singapore
+    plan: free # free, starter, standard から選択
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+      - key: MAX_FILE_SIZE
+        value: 10485760
+      - key: UPLOAD_DIR
+        value: ./uploads
+      # 以下は Render ダッシュボードで手動設定が必要
+      # - key: GEMINI_API_KEY
+      #   sync: false # 手動設定
+      # - key: FRONTEND_URL
+      #   sync: false # 手動設定（例: https://real-estate-dashboard.pages.dev）
