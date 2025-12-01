@@ -19,6 +19,10 @@ function App() {
             path="/" 
             element={isMobile ? <MobileDashboard /> : <Dashboard />} 
           />
+          <Route 
+            path="/projects" 
+            element={isMobile ? <MobileDashboard /> : <Dashboard />} 
+          />
           <Route path="/project/:projectId" element={<ProjectDetail />} />
           <Route 
             path="/calendar" 
