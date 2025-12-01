@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Home, Calendar, FileText, Bell } from "lucide-react";
 import "../styles/MobileBottomNav.css";
 
-const MobileBottomNav = () => {
+const MobileBottomNav = ({ onAddProject }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
