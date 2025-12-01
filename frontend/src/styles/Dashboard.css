@@ -23,8 +23,11 @@
 
 .header-actions {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
 }
 
 /* PDFアップロードボタン - 最も目立つデザイン */
