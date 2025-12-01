@@ -1,18 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, TrendingUp, AlertTriangle, ChevronRight, Plus } from "lucide-react";
+import { Calendar, TrendingUp, AlertTriangle, ChevronRight, Plus, Upload, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { mockProjects, mockTasks, PROJECT_STATUSES } from "../utils/mockData";
-import { checkRisksWithAI } from "../utils/api";
+import { checkRisksWithAI, uploadContractPDF } from "../utils/api";
 import MobileBottomNav from "../components/MobileBottomNav";
 import "../styles/MobileDashboard.css";
 
 const MobileDashboard = () => {
-  const [projects, setProjects] = useState(mockProjects);
+  // localStorageから案件データを読み込む（PC版と同期）
+  const [projects, setProjects] = useState(() => {
+    const savedProjects = localStorage.getItem('projects');
+    if (savedProjects) {
+      return JSON.parse(savedProjects);
+    }
+    // 初回のみmockProjectsをlocalStorageに保存
+    localStorage.setItem('projects', JSON.stringify(mockProjects));
+    return mockProjects;
+  });
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [riskAlerts, setRiskAlerts] = useState([]);
+  const [isUploadingPDF, setIsUploadingPDF] = useState(false);
+  const [isCheckingRisks, setIsCheckingRisks] = useState(false);
+  const pdfInputRef = useRef(null);
   const navigate = useNavigate();
+
+  // projectsが変更されたらlocalStorageに保存（PC版と同期）
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
+
+  // localStorageの変更を監視（他のタブ/画面での変更を反映）
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'projects' && e.newValue) {
+        setProjects(JSON.parse(e.newValue));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // 初回マウント時にリスクチェック
   useEffect(() => {
@@ -21,6 +49,7 @@ const MobileDashboard = () => {
 
   // リスクチェック処理
   const handleRiskCheck = async () => {
+    setIsCheckingRisks(true);
     try {
       const tasksMap = {};
       Object.keys(mockTasks).forEach((projectId) => {
@@ -38,6 +67,72 @@ const MobileDashboard = () => {
       }
     } catch (error) {
       console.error("リスクチェックエラー:", error);
+    } finally {
+      setIsCheckingRisks(false);
+    }
+  };
+
+  // AI-OCR案件作成（PDF アップロード）
+  const handlePDFUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // PDFファイルチェック
+    if (file.type !== 'application/pdf') {
+      alert('PDFファイルを選択してください');
+      return;
+    }
+
+    // ファイルサイズチェック（10MB）
+    if (file.size > 10 * 1024 * 1024) {
+      alert('ファイルサイズは10MB以下にしてください');
+      return;
+    }
+
+    setIsUploadingPDF(true);
+
+    try {
+      console.log('PDF アップロード開始...');
+      const response = await uploadContractPDF(file);
+      console.log('OCR結果:', response);
+
+      if (response.success && response.data) {
+        // OCRデータから新規案件を作成
+        const ocrData = response.data;
+        const newProject = {
+          project_id: `proj_${Date.now()}`,
+          project_name: `${ocrData.property_address || '新規案件'} - 売買案件`,
+          status: '契約済み',
+          contract_date: ocrData.contract_date || '',
+          settlement_date: ocrData.settlement_date || '',
+          property_price: parseInt(ocrData.property_price) || 0,
+          deposit_amount: parseInt(ocrData.deposit_amount) || 0,
+          loan_special_clause_deadline: ocrData.loan_special_clause_deadline || '',
+          buyer_name: '',
+          seller_name: '',
+          property_address: ocrData.property_address || '',
+        };
+
+        // localStorageに保存（PC版と同期）
+        const updatedProjects = [...projects, newProject];
+        setProjects(updatedProjects);
+        localStorage.setItem('projects', JSON.stringify(updatedProjects));
+
+        alert('AI-OCRで案件を作成しました！');
+        
+        // 案件詳細画面に移動
+        navigate(`/project/${newProject.project_id}`);
+      } else {
+        alert('契約書の情報抽出に失敗しました');
+      }
+    } catch (error) {
+      console.error('PDF アップロードエラー:', error);
+      alert('PDFのアップロードに失敗しました: ' + error.message);
+    } finally {
+      setIsUploadingPDF(false);
+      if (pdfInputRef.current) {
+        pdfInputRef.current.value = '';
+      }
     }
   };
 
@@ -108,6 +203,19 @@ const MobileDashboard = () => {
             </div>
           )}
         </div>
+
+        {/* AIリスクチェックボタン */}
+        <button 
+          className="risk-check-button"
+          onClick={handleRiskCheck}
+          disabled={isCheckingRisks}
+        >
+          {isCheckingRisks ? (
+            <><RefreshCw size={16} className="spinning" /> チェック中...</>
+          ) : (
+            <><AlertTriangle size={16} /> AIリスクチェック</>
+          )}
+        </button>
 
         {/* リスクアラート（簡易版） */}
         {riskAlerts.length > 0 && (
@@ -217,9 +325,21 @@ const MobileDashboard = () => {
         )}
       </div>
 
-      {/* フローティングアクションボタン */}
-      <button className="fab" title="新規案件追加">
-        <Plus size={24} />
+      {/* フローティングアクションボタン（AI-OCR） */}
+      <input
+        type="file"
+        ref={pdfInputRef}
+        onChange={handlePDFUpload}
+        accept=".pdf"
+        style={{ display: 'none' }}
+      />
+      <button 
+        className="fab" 
+        onClick={() => pdfInputRef.current?.click()}
+        disabled={isUploadingPDF}
+        title="AIで案件作成（PDF）"
+      >
+        {isUploadingPDF ? <RefreshCw size={24} className="spinning" /> : <Upload size={24} />}
       </button>
 
       {/* ボトムナビゲーション */}

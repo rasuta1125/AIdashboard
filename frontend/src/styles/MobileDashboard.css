@@ -247,6 +247,16 @@
   margin-bottom: 0.25rem;
 }
 
+.status-badge.契約前 {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.status-badge.契約済み {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
 .status-badge.契約直後 {
   background: #dbeafe;
   color: #1e40af;
@@ -339,7 +349,50 @@
   font-size: 1rem;
 }
 
-/* フローティングアクションボタン */
+/* AIリスクチェックボタン */
+.risk-check-button {
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 0.625rem 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.risk-check-button:active:not(:disabled) {
+  transform: scale(0.98);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.risk-check-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* フローティングアクションボタン（AI-OCR） */
 .fab {
   position: fixed;
   bottom: calc(80px + env(safe-area-inset-bottom));
@@ -360,8 +413,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.fab:active {
+.fab:active:not(:disabled) {
   transform: scale(0.9);
+}
+
+.fab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* プルトゥリフレッシュアニメーション */
