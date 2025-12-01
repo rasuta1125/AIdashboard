@@ -1,0 +1,318 @@
+/* モバイルアラートページ全体 */
+.mobile-alerts {
+  min-height: 100vh;
+  background: #f7fafc;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+/* ヘッダー */
+.mobile-alerts-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+  padding-top: calc(1rem + env(safe-area-inset-top));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-alerts-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex: 1;
+  text-align: center;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.back-button:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.spacer {
+  width: 44px;
+}
+
+/* コンテンツエリア */
+.mobile-alerts-content {
+  padding: 1rem;
+}
+
+/* ローディング状態 */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state p {
+  margin: 0;
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+/* 空の状態 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.empty-icon {
+  color: #cbd5e0;
+  margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+/* アラートサマリー */
+.alerts-summary {
+  background: linear-gradient(135deg, #fef5e7 0%, #fef3c7 100%);
+  border: 2px solid #f6ad55;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: #92400e;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.alerts-summary svg {
+  flex-shrink: 0;
+}
+
+/* アラートリスト */
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* アラートカード */
+.alert-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #cbd5e0;
+}
+
+.alert-card.critical {
+  border-left-color: #fc8181;
+  background: linear-gradient(to right, #fff5f5 0%, white 10%);
+}
+
+.alert-card.high {
+  border-left-color: #f6ad55;
+  background: linear-gradient(to right, #fef5e7 0%, white 10%);
+}
+
+.alert-card.medium {
+  border-left-color: #f6e05e;
+  background: linear-gradient(to right, #fefcf0 0%, white 10%);
+}
+
+.alert-card.low {
+  border-left-color: #63b3ed;
+  background: linear-gradient(to right, #ebf8ff 0%, white 10%);
+}
+
+/* アラートヘッダー */
+.alert-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.alert-severity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.alert-card.critical .alert-severity-badge {
+  background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+  color: white;
+}
+
+.alert-card.high .alert-severity-badge {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+  color: white;
+}
+
+.alert-card.medium .alert-severity-badge {
+  background: linear-gradient(135deg, #f6e05e 0%, #ecc94b 100%);
+  color: #744210;
+}
+
+.alert-card.low .alert-severity-badge {
+  background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+  color: white;
+}
+
+.dismiss-button {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem;
+  border-radius: 6px;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.dismiss-button:active {
+  transform: scale(0.95);
+  background: #f7fafc;
+}
+
+/* アラートメッセージ */
+.alert-message {
+  margin-bottom: 0.75rem;
+}
+
+.alert-message h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+  line-height: 1.4;
+}
+
+.alert-details {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+/* アラート案件情報 */
+.alert-project {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.project-label {
+  color: #718096;
+  font-weight: 500;
+}
+
+.project-name {
+  color: #2d3748;
+  font-weight: 700;
+  flex: 1;
+}
+
+/* アクションボタン */
+.view-project-button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.view-project-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+/* アニメーション */
+.alert-card {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* スムーズスクロール */
+.mobile-alerts {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}

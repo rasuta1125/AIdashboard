@@ -392,7 +392,7 @@
   }
 }
 
-/* フローティングアクションボタン（AI-OCR） */
+/* フローティングアクションボタン */
 .fab {
   position: fixed;
   bottom: calc(80px + env(safe-area-inset-bottom));
@@ -408,7 +408,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   z-index: 999;
   -webkit-tap-highlight-color: transparent;
 }
@@ -420,6 +420,90 @@
 .fab:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.fab.active {
+  transform: rotate(45deg);
+}
+
+.fab svg.rotate {
+  transition: transform 0.3s ease;
+}
+
+/* FABオーバーレイ */
+.fab-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* FABメニュー */
+.fab-menu {
+  position: fixed;
+  bottom: calc(145px + env(safe-area-inset-bottom));
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 999;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fab-menu-item {
+  background: white;
+  border: none;
+  border-radius: 28px;
+  padding: 0.875rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.875rem;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.fab-menu-item:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.fab-menu-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fab-menu-item svg {
+  color: #667eea;
 }
 
 /* プルトゥリフレッシュアニメーション */

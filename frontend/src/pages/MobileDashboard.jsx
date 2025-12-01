@@ -6,6 +6,7 @@ import { ja } from "date-fns/locale";
 import { mockProjects, mockTasks, PROJECT_STATUSES } from "../utils/mockData";
 import { checkRisksWithAI, uploadContractPDF } from "../utils/api";
 import MobileBottomNav from "../components/MobileBottomNav";
+import ProjectModal from "../components/ProjectModal";
 import "../styles/MobileDashboard.css";
 
 const MobileDashboard = () => {
@@ -23,6 +24,8 @@ const MobileDashboard = () => {
   const [riskAlerts, setRiskAlerts] = useState([]);
   const [isUploadingPDF, setIsUploadingPDF] = useState(false);
   const [isCheckingRisks, setIsCheckingRisks] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
   const pdfInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -70,6 +73,26 @@ const MobileDashboard = () => {
     } finally {
       setIsCheckingRisks(false);
     }
+  };
+
+  // 案件の手動追加
+  const handleAddProject = () => {
+    setIsProjectModalOpen(true);
+  };
+
+  // 案件の保存
+  const handleSaveProject = (projectData) => {
+    const newProject = {
+      ...projectData,
+      project_id: Date.now(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const updatedProjects = [...projects, newProject];
+    setProjects(updatedProjects);
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    setIsProjectModalOpen(false);
+    alert('✅ 案件を追加しました！');
   };
 
   // AI-OCR案件作成（PDF アップロード）
@@ -325,7 +348,7 @@ const MobileDashboard = () => {
         )}
       </div>
 
-      {/* フローティングアクションボタン（AI-OCR） */}
+      {/* フローティングアクションボタン（メニュー付き） */}
       <input
         type="file"
         ref={pdfInputRef}
@@ -333,17 +356,70 @@ const MobileDashboard = () => {
         accept=".pdf"
         style={{ display: 'none' }}
       />
+      
+      {/* FABメニュー */}
+      {isFabMenuOpen && (
+        <div className="fab-menu">
+          <button 
+            className="fab-menu-item"
+            onClick={() => {
+              setIsFabMenuOpen(false);
+              handleAddProject();
+            }}
+          >
+            <Plus size={20} />
+            <span>手動で追加</span>
+          </button>
+          <button 
+            className="fab-menu-item"
+            onClick={() => {
+              setIsFabMenuOpen(false);
+              pdfInputRef.current?.click();
+            }}
+            disabled={isUploadingPDF}
+          >
+            {isUploadingPDF ? (
+              <>
+                <RefreshCw size={20} className="spinning" />
+                <span>処理中...</span>
+              </>
+            ) : (
+              <>
+                <Upload size={20} />
+                <span>AIで作成</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+      
+      {/* FABオーバーレイ */}
+      {isFabMenuOpen && (
+        <div 
+          className="fab-overlay"
+          onClick={() => setIsFabMenuOpen(false)}
+        />
+      )}
+      
+      {/* FABボタン */}
       <button 
-        className="fab" 
-        onClick={() => pdfInputRef.current?.click()}
-        disabled={isUploadingPDF}
-        title="AIで案件作成（PDF）"
+        className={`fab ${isFabMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsFabMenuOpen(!isFabMenuOpen)}
+        title="案件を追加"
       >
-        {isUploadingPDF ? <RefreshCw size={24} className="spinning" /> : <Upload size={24} />}
+        <Plus size={24} className={isFabMenuOpen ? 'rotate' : ''} />
       </button>
 
       {/* ボトムナビゲーション */}
       <MobileBottomNav />
+
+      {/* 案件追加モーダル */}
+      <ProjectModal
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        onSave={handleSaveProject}
+        mode="add"
+      />
     </div>
   );
 };
