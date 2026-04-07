@@ -1,0 +1,15 @@
+{
+  "name": "real-estate-api-worker",
+  "version": "1.0.0",
+  "description": "不動産管理API - Cloudflare Workers",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "itty-router": "^5.0.18"
+  }
+}
