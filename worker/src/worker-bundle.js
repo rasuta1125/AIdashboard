@@ -190,13 +190,20 @@ function buildFieldFilter({ field, op, value }) {
 async function storageUpload(env, storagePath, fileBuffer, contentType) {
   const token = await getAccessToken(env);
   const bucket = env.FIREBASE_STORAGE_BUCKET;
-  const encodedPath = encodeURIComponent(storagePath);
-  const res = await fetch(`https://storage.googleapis.com/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodedPath}`, {
+  // Firebase Storage REST API: nameパラメータはスラッシュを含むパスをエンコード
+  const encodedName = encodeURIComponent(storagePath);
+  const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/${encodeURIComponent(bucket)}/o?uploadType=media&name=${encodedName}`;
+  console.log('Storage upload URL:', uploadUrl.replace(token, '[TOKEN]'));
+  const res = await fetch(uploadUrl, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': contentType },
     body: fileBuffer,
   });
-  if (!res.ok) throw new Error('Storage upload failed: ' + await res.text());
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error('Storage upload failed:', res.status, errText);
+    throw new Error(`Storage upload failed (${res.status}): ${errText}`);
+  }
   return await res.json();
 }
 
@@ -204,7 +211,7 @@ async function storageDownload(env, storagePath) {
   const token = await getAccessToken(env);
   const bucket = env.FIREBASE_STORAGE_BUCKET;
   const encodedPath = encodeURIComponent(storagePath);
-  const res = await fetch(`https://storage.googleapis.com/storage/v1/b/${bucket}/o/${encodedPath}?alt=media`, {
+  const res = await fetch(`https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodedPath}?alt=media`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) return null;
@@ -215,7 +222,7 @@ async function storageDelete(env, storagePath) {
   const token = await getAccessToken(env);
   const bucket = env.FIREBASE_STORAGE_BUCKET;
   const encodedPath = encodeURIComponent(storagePath);
-  await fetch(`https://storage.googleapis.com/storage/v1/b/${bucket}/o/${encodedPath}`, {
+  await fetch(`https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodedPath}`, {
     method: 'DELETE', headers: { Authorization: `Bearer ${token}` },
   });
 }
@@ -325,7 +332,9 @@ async function countPdfsByPropertyId(env, propertyId) {
 
 async function addPdf(env, propertyId, fileBuffer, originalName, size) {
   const id = crypto.randomUUID();
-  const storagePath = `pdfs/${propertyId}/${id}_${originalName}`;
+  // ファイル名を安全な形式に変換（スペースや特殊文字を除去）
+  const safeFileName = originalName.replace(/[^\w.\-]/g, '_');
+  const storagePath = `pdfs/${propertyId}/${id}_${safeFileName}`;
   await storageUpload(env, storagePath, fileBuffer, 'application/pdf');
   const pdf = { id, propertyId, originalName, storagePath, size, uploadedAt: new Date().toISOString() };
   await firestoreSet(env, 'pdfs', id, pdf);
@@ -518,7 +527,10 @@ async function handleRequest(request, env) {
       if (parsed.error) return errRes(parsed.error, 400, env, request);
       const pdf = await addPdf(env, propertyId, parsed.buffer, parsed.name, parsed.size);
       return jsonRes({ success: true, data: pdf }, 201, env, request);
-    } catch (e) { console.error(e); return errRes('PDFのアップロードに失敗しました', 500, env, request); }
+    } catch (e) {
+      console.error('PDF upload error:', e.message, e.stack);
+      return errRes('PDFのアップロードに失敗しました: ' + e.message, 500, env, request);
+    }
   }
 
   const pdfViewMatch = path.match(/^\/api\/pdfs\/view\/([^/]+)$/);
