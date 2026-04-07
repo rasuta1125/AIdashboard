@@ -73,12 +73,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="login-footer">
-          <div className="account-info">
-            <p><strong>管理ユーザー：</strong> goldkei / goldkei123!</p>
-            <p><strong>利用ユーザー：</strong> user / user123</p>
-          </div>
-        </div>
+
       </div>
     </div>
   );
