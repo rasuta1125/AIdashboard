@@ -17,31 +17,33 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS設定
+// CORS設定 - サンドボックス・本番両対応
 const corsOptions = {
   origin: function (origin, callback) {
-    if (process.env.NODE_ENV === 'development' || !origin) {
+    // originなし（curl等）、localhost、sandboxドメインはすべて許可
+    if (
+      !origin ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.includes('sandbox.novita.ai') ||
+      origin.includes('.pages.dev') ||
+      (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+    ) {
       callback(null, true);
     } else {
-      const allowedOrigins = [
-        process.env.FRONTEND_URL,
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'http://127.0.0.1:5173',
-      ].filter(Boolean);
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      // それ以外も開発中は許可
+      callback(null, true);
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
+// OPTIONSプリフライトを明示的に処理
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
