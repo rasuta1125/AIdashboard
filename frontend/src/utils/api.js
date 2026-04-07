@@ -1,256 +1,74 @@
-// APIベースURL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
-/**
- * 契約書PDFをアップロードしてOCR処理を実行
- * @param {File} file - PDFファイル
- * @returns {Promise<Object>} 抽出された契約書情報
- */
-export async function uploadContractPDF(file) {
-  try {
-    // FormDataを作成
-    const formData = new FormData();
-    formData.append("contract", file);
+const getToken = () => localStorage.getItem('token');
 
-    // APIにリクエスト
-    const response = await fetch(`${API_BASE_URL}/api/ocr/contract`, {
-      method: "POST",
-      body: formData,
-    });
+const request = async (method, path, body = null, isFormData = false) => {
+  const headers = {};
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (!isFormData) headers['Content-Type'] = 'application/json';
 
-    // レスポンスをJSON形式で取得
-    const data = await response.json();
+  const options = { method, headers };
+  if (body) options.body = isFormData ? body : JSON.stringify(body);
 
-    // エラーチェック
-    if (!response.ok) {
-      throw new Error(data.error || "契約書のアップロードに失敗しました");
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || "契約書の処理に失敗しました");
-    }
-
-    return data;
-  } catch (error) {
-    console.error("API Error:", error);
-    throw error;
+  const res = await fetch(`${API_BASE_URL}${path}`, options);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'ネットワークエラーが発生しました' }));
+    throw new Error(err.error || `HTTPエラー: ${res.status}`);
   }
-}
-
-/**
- * APIのヘルスチェック
- * @returns {Promise<Object>} サーバーの状態
- */
-export async function checkApiHealth() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/health`);
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Health Check Error:", error);
-    throw error;
-  }
-}
-
-/**
- * メールを生成
- * @param {Object} context - メール生成に必要なコンテキスト情報
- * @returns {Promise<Object>} 生成されたメール
- */
-export async function generateEmail(context) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/email/generate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(context),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "メール生成に失敗しました");
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || "メール生成に失敗しました");
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Email Generation Error:", error);
-    throw error;
-  }
-}
-
-/**
- * タスク完了時のメールを生成
- * @param {Object} taskContext - タスク完了時のコンテキスト
- * @returns {Promise<Object>} 生成されたメール
- */
-export async function generateTaskCompletionEmail(taskContext) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/email/task-completion`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(taskContext),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "メール生成に失敗しました");
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || "メール生成に失敗しました");
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Task Completion Email Generation Error:", error);
-    throw error;
-  }
-}
-
-/**
- * リスクチェック（AI警告生成なし）
- * @param {Object} data - チェックするデータ
- * @returns {Promise<Object>} 検出されたリスク
- */
-export async function checkRisks(data) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/risk/check`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "リスクチェックに失敗しました");
-    }
-
-    if (!result.success) {
-      throw new Error(result.error || "リスクチェックに失敗しました");
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Risk Check Error:", error);
-    throw error;
-  }
-}
-
-/**
- * AIリスクチェック（警告生成あり）
- * @param {Object} data - チェックするデータ
- * @returns {Promise<Object>} AIが生成した警告
- */
-export async function checkRisksWithAI(data) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/risk/check-with-ai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "AIリスクチェックに失敗しました");
-    }
-
-    if (!result.success) {
-      throw new Error(result.error || "AIリスクチェックに失敗しました");
-    }
-
-    return result;
-  } catch (error) {
-    console.error("AI Risk Check Error:", error);
-    throw error;
-  }
-}
-
-/**
- * AIスケジュール提案を生成
- * @param {Object} data - スケジュールデータ
- * @returns {Promise<Object>} AIスケジュール提案
- */
-export async function generateScheduleSuggestion(data) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/schedule/suggest`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "スケジュール提案生成に失敗しました");
-    }
-
-    if (!result.success) {
-      throw new Error(result.error || "スケジュール提案生成に失敗しました");
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Schedule Suggestion Error:", error);
-    throw error;
-  }
-}
-
-/**
- * タスクスケジュール提案を生成
- * @param {Object} data - タスクデータ
- * @returns {Promise<Object>} タスクスケジュール提案
- */
-export async function generateTaskSchedule(data) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/schedule/suggest-tasks`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || "タスクスケジュール提案生成に失敗しました");
-    }
-
-    if (!result.success) {
-      throw new Error(result.error || "タスクスケジュール提案生成に失敗しました");
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Task Schedule Suggestion Error:", error);
-    throw error;
-  }
-}
-
-export default {
-  uploadContractPDF,
-  checkApiHealth,
-  generateEmail,
-  generateTaskCompletionEmail,
-  checkRisks,
-  checkRisksWithAI,
-  generateScheduleSuggestion,
-  generateTaskSchedule,
+  return res.json();
 };
+
+// 認証API
+export const authApi = {
+  login: (loginId, password) => request('POST', '/api/auth/login', { loginId, password }),
+  logout: () => request('POST', '/api/auth/logout'),
+  me: () => request('GET', '/api/auth/me'),
+};
+
+// 物件API
+export const propertyApi = {
+  getAll: () => request('GET', '/api/properties'),
+  getById: (id) => request('GET', `/api/properties/${id}`),
+  create: (data) => request('POST', '/api/properties', data),
+  update: (id, data) => request('PUT', `/api/properties/${id}`, data),
+  delete: (id) => request('DELETE', `/api/properties/${id}`),
+};
+
+// PDF API
+export const pdfApi = {
+  upload: (propertyId, file) => {
+    const formData = new FormData();
+    formData.append('pdf', file);
+    return request('POST', `/api/pdfs/upload/${propertyId}`, formData, true);
+  },
+  getViewUrl: (pdfId) => `${API_BASE_URL}/api/pdfs/view/${pdfId}`,
+  getDownloadUrl: (pdfId) => `${API_BASE_URL}/api/pdfs/download/${pdfId}`,
+  view: async (pdfId) => {
+    const token = getToken();
+    const res = await fetch(`${API_BASE_URL}/api/pdfs/view/${pdfId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('PDFの取得に失敗しました');
+    return res.blob();
+  },
+  download: async (pdfId, filename) => {
+    const token = getToken();
+    const res = await fetch(`${API_BASE_URL}/api/pdfs/download/${pdfId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('ダウンロードに失敗しました');
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
+  delete: (pdfId) => request('DELETE', `/api/pdfs/${pdfId}`),
+};
+
+export default { authApi, propertyApi, pdfApi };

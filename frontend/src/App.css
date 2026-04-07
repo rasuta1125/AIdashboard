@@ -1,97 +1,972 @@
-/* アプリケーション全体のスタイル */
-* {
+/* ============================================
+   リセット・グローバル
+============================================ */
+*, *::before, *::after {
   box-sizing: border-box;
-}
-
-.app {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* スムーズスクロール */
-html {
-  scroll-behavior: smooth;
-}
-
-/* デフォルトのマージンとパディングをリセット */
-body {
   margin: 0;
   padding: 0;
 }
 
-/* リンクのデフォルトスタイル */
-a {
-  color: inherit;
+:root {
+  --primary: #1a56db;
+  --primary-hover: #1e40af;
+  --primary-light: #eff6ff;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-light: #fef2f2;
+  --success: #16a34a;
+  --success-light: #f0fdf4;
+  --warning: #d97706;
+  --warning-light: #fffbeb;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background-color: var(--gray-50);
+  color: var(--gray-800);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ============================================
+   レイアウト
+============================================ */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ============================================
+   ヘッダー
+============================================ */
+.header {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  font-size: 24px;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-size: 14px;
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+/* ============================================
+   ページヘッダー
+============================================ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+}
+
+/* ============================================
+   ロールバッジ
+============================================ */
+.role-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.role-admin {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.role-user {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* ============================================
+   ボタン
+============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
   text-decoration: none;
+  line-height: 1;
 }
 
-/* ボタンのデフォルトスタイル */
-button {
-  font-family: inherit;
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-/* 選択テキストのスタイル */
-::selection {
-  background-color: #667eea;
-  color: white;
+.btn-primary {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
 }
 
-/* フォーカス時のアウトライン */
-*:focus {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);
 }
 
-button:focus,
-input:focus,
-select:focus,
-textarea:focus {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
+.btn-secondary {
+  background: var(--gray-700);
+  color: var(--white);
+  border-color: var(--gray-700);
 }
 
-/* モーダル共通スタイル */
+.btn-secondary:hover:not(:disabled) {
+  background: var(--gray-800);
+  border-color: var(--gray-800);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--gray-700);
+  border-color: var(--gray-300);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--gray-600);
+  border-color: transparent;
+  padding: 8px 12px;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
+.btn-sm {
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ============================================
+   フォーム
+============================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 15px;
+  color: var(--gray-800);
+  background: var(--white);
+  transition: border-color 0.15s;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
+}
+
+.form-group input:disabled {
+  background: var(--gray-50);
+  color: var(--gray-500);
+}
+
+.required {
+  color: var(--danger);
+}
+
+.price-preview {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ============================================
+   エラー/アラート
+============================================ */
+.error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ============================================
+   ログイン画面
+============================================ */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.login-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+}
+
+.login-header p {
+  font-size: 15px;
+  color: var(--gray-500);
+}
+
+.login-form {
+  margin-bottom: 24px;
+}
+
+.login-footer {
+  border-top: 1px solid var(--gray-200);
+  padding-top: 20px;
+}
+
+.account-info {
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  border: 1px solid var(--gray-200);
+}
+
+.account-info p {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.8;
+}
+
+.account-info strong {
+  color: var(--gray-800);
+}
+
+/* ============================================
+   テーブル
+============================================ */
+.table-container {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead tr {
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.data-table th {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background 0.1s;
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+.data-table td {
+  padding: 16px 20px;
+  font-size: 15px;
+}
+
+.property-name {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.property-price {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 15px;
+}
+
+.pdf-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-600);
+  background: var(--gray-100);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.pdf-count-full {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   カード
+============================================ */
+.detail-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.detail-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.detail-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-info-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+}
+
+.detail-info-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.price-value {
+  color: var(--primary);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* ============================================
+   PDFリスト
+============================================ */
+.pdf-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.limit-note {
+  font-size: 12px;
+  color: var(--warning);
+  font-weight: 500;
+}
+
+.pdf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pdf-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-100);
+  gap: 12px;
+  transition: background 0.1s;
+}
+
+.pdf-item:hover {
+  background: var(--primary-light);
+  border-color: #bfdbfe;
+}
+
+.pdf-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pdf-index {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-400);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.pdf-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pdf-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pdf-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-date {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+.pdf-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   モーダル
+============================================ */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
+  backdrop-filter: blur(2px);
 }
 
 .modal-content {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  position: relative;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-.modal-close-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #9ca3af;
-  padding: 4px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.modal-confirm {
+  max-width: 400px;
 }
 
-.modal-close-button:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 0;
+  gap: 16px;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--gray-700);
+}
+
+.modal-form {
+  padding: 20px 28px;
+}
+
+.modal-body {
+  padding: 20px 28px;
+  font-size: 15px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 28px 24px;
+  border-top: 1px solid var(--gray-100);
+  margin-top: 8px;
+}
+
+/* ============================================
+   PDFビューアー
+============================================ */
+.pdf-viewer-overlay {
+  align-items: stretch;
+  padding: 16px;
+}
+
+.pdf-viewer-modal {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100vh - 32px);
+}
+
+.pdf-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.pdf-viewer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 15px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pdf-viewer-title span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pdf-viewer-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: var(--gray-100);
+}
+
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  border: none;
+  display: block;
+}
+
+/* ============================================
+   ローディング・空状態
+============================================ */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 24px;
+  color: var(--gray-500);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 24px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--gray-300);
+}
+
+.empty-state-small {
+  padding: 40px 24px;
+  border: 1px dashed var(--gray-200);
+  border-radius: var(--radius);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
+.hint {
+  font-size: 13px !important;
+  color: var(--gray-400) !important;
+  margin-top: 4px;
+}
+
+/* ============================================
+   トースト通知
+============================================ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  animation: slideInRight 0.3s ease;
+  max-width: 360px;
+}
+
+.toast-success {
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid #bbf7d0;
+}
+
+.toast-error {
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid #fecaca;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   レスポンシブ
+============================================ */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px 16px;
+  }
+
+  .header-inner {
+    padding: 0 16px;
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .data-table th:nth-child(4),
+  .data-table td:nth-child(4) {
+    display: none;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pdf-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pdf-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .detail-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pdf-viewer-modal {
+    max-height: calc(100vh - 32px);
+  }
+
+  .modal-content {
+    max-width: 100%;
+  }
+
+  .login-card {
+    padding: 28px 20px;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .toast {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-inner {
+    height: 56px;
+  }
+
+  .data-table th:nth-child(3),
+  .data-table td:nth-child(3) {
+    display: none;
+  }
+
+  .detail-card {
+    padding: 20px 16px;
+  }
 }

@@ -1,31 +1,38 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import ProjectDetail from "./pages/ProjectDetail";
-import Calendar from "./pages/Calendar";
-import MobileDashboard from "./pages/MobileDashboard";
-import MobileCalendar from "./pages/MobileCalendar";
-import useIsMobile from "./hooks/useIsMobile";
-import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import PropertyList from './pages/PropertyList';
+import PropertyDetail from './pages/PropertyDetail';
+import './App.css';
 
 function App() {
-  const isMobile = useIsMobile();
-
   return (
-    <Router>
-      <div className="app">
+    <AuthProvider>
+      <Router>
         <Routes>
-          <Route 
-            path="/" 
-            element={isMobile ? <MobileDashboard /> : <Dashboard />} 
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/properties"
+            element={
+              <ProtectedRoute>
+                <PropertyList />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/project/:projectId" element={<ProjectDetail />} />
-          <Route 
-            path="/calendar" 
-            element={isMobile ? <MobileCalendar /> : <Calendar />} 
+          <Route
+            path="/properties/:id"
+            element={
+              <ProtectedRoute>
+                <PropertyDetail />
+              </ProtectedRoute>
+            }
           />
+          <Route path="/" element={<Navigate to="/properties" replace />} />
+          <Route path="*" element={<Navigate to="/properties" replace />} />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
