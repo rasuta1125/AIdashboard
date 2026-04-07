@@ -2,6 +2,14 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001
 
 const getToken = () => localStorage.getItem('token');
 
+// 401エラー時にログイン画面へ強制リダイレクト
+const handleUnauthorized = () => {
+  localStorage.removeItem('token');
+  if (window.location.pathname !== '/login') {
+    window.location.href = '/login';
+  }
+};
+
 const request = async (method, path, body = null, isFormData = false) => {
   const headers = {};
   const token = getToken();
@@ -11,9 +19,21 @@ const request = async (method, path, body = null, isFormData = false) => {
   const options = { method, headers };
   if (body) options.body = isFormData ? body : JSON.stringify(body);
 
-  const res = await fetch(`${API_BASE_URL}${path}`, options);
+  let res;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, options);
+  } catch (err) {
+    throw new Error('サーバーに接続できません。しばらく待ってから再試行してください。');
+  }
+
+  // 401: セッション切れ → 自動ログアウト
+  if (res.status === 401) {
+    handleUnauthorized();
+    throw new Error('セッションが切れました。再ログインしてください。');
+  }
+
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'ネットワークエラーが発生しました' }));
+    const err = await res.json().catch(() => ({ error: `HTTPエラー: ${res.status}` }));
     throw new Error(err.error || `HTTPエラー: ${res.status}`);
   }
   return res.json();
@@ -42,21 +62,31 @@ export const pdfApi = {
     formData.append('pdf', file);
     return request('POST', `/api/pdfs/upload/${propertyId}`, formData, true);
   },
-  getViewUrl: (pdfId) => `${API_BASE_URL}/api/pdfs/view/${pdfId}`,
-  getDownloadUrl: (pdfId) => `${API_BASE_URL}/api/pdfs/download/${pdfId}`,
   view: async (pdfId) => {
     const token = getToken();
-    const res = await fetch(`${API_BASE_URL}/api/pdfs/view/${pdfId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    let res;
+    try {
+      res = await fetch(`${API_BASE_URL}/api/pdfs/view/${pdfId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) {
+      throw new Error('サーバーに接続できません。');
+    }
+    if (res.status === 401) { handleUnauthorized(); throw new Error('セッションが切れました。'); }
     if (!res.ok) throw new Error('PDFの取得に失敗しました');
     return res.blob();
   },
   download: async (pdfId, filename) => {
     const token = getToken();
-    const res = await fetch(`${API_BASE_URL}/api/pdfs/download/${pdfId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    let res;
+    try {
+      res = await fetch(`${API_BASE_URL}/api/pdfs/download/${pdfId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) {
+      throw new Error('サーバーに接続できません。');
+    }
+    if (res.status === 401) { handleUnauthorized(); throw new Error('セッションが切れました。'); }
     if (!res.ok) throw new Error('ダウンロードに失敗しました');
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);

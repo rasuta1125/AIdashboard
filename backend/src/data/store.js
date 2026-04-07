@@ -11,13 +11,16 @@ const __dirname = path.dirname(__filename);
 // データ保存先ディレクトリ
 const DATA_DIR = path.join(__dirname, '../../data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+const SESSION_FILE = path.join(DATA_DIR, 'sessions.json');
 
 // データディレクトリを作成
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// 初期データ定義
+// ==============================
+// DB（物件・PDF）の永続化
+// ==============================
 const INITIAL_DATA = {
   properties: [
     {
@@ -38,22 +41,21 @@ const INITIAL_DATA = {
   pdfs: [],
 };
 
-// DBファイルの読み込み（なければ初期データで作成）
 function loadDB() {
   try {
     if (fs.existsSync(DB_FILE)) {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.properties) return parsed;
     }
   } catch (err) {
     console.error('DB読み込みエラー:', err);
   }
-  // ファイルがない or 壊れている場合は初期データを書き込んで返す
-  saveDB(INITIAL_DATA);
-  return JSON.parse(JSON.stringify(INITIAL_DATA));
+  const initial = JSON.parse(JSON.stringify(INITIAL_DATA));
+  saveDB(initial);
+  return initial;
 }
 
-// DBファイルへの書き込み
 function saveDB(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
@@ -62,7 +64,6 @@ function saveDB(data) {
   }
 }
 
-// DBを読み込んで操作、保存するラッパー
 function withDB(fn) {
   const db = loadDB();
   const result = fn(db);
@@ -70,7 +71,44 @@ function withDB(fn) {
   return result;
 }
 
-// ユーザーデータ（固定。変更不要のためメモリのみ）
+// ==============================
+// セッションの永続化
+// ==============================
+function loadSessions() {
+  try {
+    if (fs.existsSync(SESSION_FILE)) {
+      const raw = fs.readFileSync(SESSION_FILE, 'utf-8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('セッション読み込みエラー:', err);
+  }
+  return {};
+}
+
+function saveSessions(sessions) {
+  try {
+    fs.writeFileSync(SESSION_FILE, JSON.stringify(sessions, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('セッション書き込みエラー:', err);
+  }
+}
+
+// 起動時に期限切れセッションを掃除してロード
+let sessions = loadSessions();
+const now = Date.now();
+let cleaned = false;
+for (const token in sessions) {
+  if (sessions[token].expiresAt < now) {
+    delete sessions[token];
+    cleaned = true;
+  }
+}
+if (cleaned) saveSessions(sessions);
+
+// ==============================
+// ユーザーデータ（固定）
+// ==============================
 const users = [
   {
     id: '1',
@@ -88,15 +126,14 @@ const users = [
   },
 ];
 
-// セッション（サーバー再起動でリセットされるが許容）
-let sessions = {};
-
+// ==============================
+// ストア
+// ==============================
 export const store = {
   // ===== ユーザー =====
   findUserByLoginId(loginId) {
     return users.find((u) => u.loginId === loginId);
   },
-
   findUserById(id) {
     return users.find((u) => u.id === id);
   },
@@ -107,23 +144,28 @@ export const store = {
     sessions[token] = {
       userId,
       createdAt: Date.now(),
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24時間
+      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7日間
     };
+    saveSessions(sessions);
     return token;
   },
 
   validateSession(token) {
+    sessions = loadSessions(); // 常に最新を読む
     const session = sessions[token];
     if (!session) return null;
     if (Date.now() > session.expiresAt) {
       delete sessions[token];
+      saveSessions(sessions);
       return null;
     }
     return this.findUserById(session.userId);
   },
 
   deleteSession(token) {
+    sessions = loadSessions();
     delete sessions[token];
+    saveSessions(sessions);
   },
 
   // ===== 物件 =====
@@ -174,7 +216,6 @@ export const store = {
       const idx = db.properties.findIndex((p) => p.id === id);
       if (idx === -1) return false;
       db.properties.splice(idx, 1);
-      // 関連PDFも削除
       db.pdfs = db.pdfs.filter((pdf) => pdf.propertyId !== id);
       return true;
     });
@@ -223,8 +264,10 @@ export const store = {
   },
 };
 
-// 起動時にDBを初期化
+// 起動時にDBを初期化確認
 loadDB();
 console.log(`📂 DBファイル: ${DB_FILE}`);
+console.log(`🔑 セッションファイル: ${SESSION_FILE}`);
+console.log(`🔐 有効セッション数: ${Object.keys(sessions).length}`);
 
 export default store;
