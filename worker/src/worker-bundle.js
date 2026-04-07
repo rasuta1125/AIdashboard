@@ -1,8 +1,49 @@
 // ============================================================
 // 不動産管理API - Cloudflare Workers (全ファイル統合版)
+// bcryptjs不使用・Web Crypto API使用版
 // ============================================================
 
-import bcrypt from 'bcryptjs';
+// ============================================================
+// パスワードハッシュ（Web Crypto API使用）
+// bcryptの代替：PBKDF2でハッシュ化
+// ============================================================
+async function hashPassword(password) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const hash = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
+  const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `pbkdf2:${saltHex}:${hashHex}`;
+}
+
+async function verifyPassword(password, stored) {
+  // bcryptハッシュ（既存データ）との互換のため、bcryptは別途対応
+  // 新形式: pbkdf2:salt:hash
+  if (stored.startsWith('pbkdf2:')) {
+    const [, saltHex, hashHex] = stored.split(':');
+    const salt = new Uint8Array(saltHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+    const hash = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial, 256
+    );
+    const computedHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return computedHex === hashHex;
+  }
+  // bcrypt形式（$2b$）→ 簡易チェック不可のためFirestoreに平文フラグで比較
+  // 初回移行時のみ: プレーンテキスト比較フォールバック
+  if (stored.startsWith('$2')) {
+    // bcryptはWorkerで動かないため、Firestoreに保存済みの初期ユーザーは
+    // 再作成時にPBKDF2形式で上書きする
+    return false;
+  }
+  return false;
+}
 
 // ============================================================
 // Firebase REST API
@@ -173,12 +214,22 @@ async function storageDelete(env, storagePath) {
 const SESSION_EXPIRE_MS = 7 * 24 * 60 * 60 * 1000;
 
 async function ensureInitialUsers(env) {
-  const users = await firestoreQuery(env, 'users');
-  if (users.length > 0) return;
-  const hashedAdmin = await bcrypt.hash('goldkei123!', 10);
-  const hashedUser = await bcrypt.hash('user123', 10);
-  await firestoreSet(env, 'users', '1', { id: '1', loginId: 'goldkei', password: hashedAdmin, name: '管理者', role: 'admin', createdAt: new Date().toISOString() });
-  await firestoreSet(env, 'users', '2', { id: '2', loginId: 'user', password: hashedUser, name: '利用ユーザー', role: 'user', createdAt: new Date().toISOString() });
+  // 既存ユーザーを確認（PBKDF2形式かどうか）
+  const admin = await firestoreGet(env, 'users', '1');
+  // 存在しないか、bcrypt形式（$2b$）のままなら再作成
+  if (!admin || admin.password.startsWith('$2')) {
+    const hashedAdmin = await hashPassword('goldkei123!');
+    const hashedUser = await hashPassword('user123');
+    await firestoreSet(env, 'users', '1', {
+      id: '1', loginId: 'goldkei', password: hashedAdmin,
+      name: '管理者', role: 'admin', createdAt: new Date().toISOString(),
+    });
+    await firestoreSet(env, 'users', '2', {
+      id: '2', loginId: 'user', password: hashedUser,
+      name: '利用ユーザー', role: 'user', createdAt: new Date().toISOString(),
+    });
+    console.log('初期ユーザーをPBKDF2形式で作成/更新しました');
+  }
 }
 
 async function findUserByLoginId(env, loginId) {
@@ -192,7 +243,9 @@ async function findUserById(env, id) {
 
 async function createSession(env, userId) {
   const token = crypto.randomUUID();
-  await firestoreSet(env, 'sessions', token, { userId: String(userId), createdAt: Date.now(), expiresAt: Date.now() + SESSION_EXPIRE_MS });
+  await firestoreSet(env, 'sessions', token, {
+    userId: String(userId), createdAt: Date.now(), expiresAt: Date.now() + SESSION_EXPIRE_MS,
+  });
   return token;
 }
 
@@ -352,11 +405,11 @@ async function handleRequest(request, env) {
       if (!loginId || !password) return errRes('ログインIDとパスワードを入力してください', 400, env, request);
       const user = await findUserByLoginId(env, loginId);
       if (!user) return errRes('ログインIDまたはパスワードが間違っています', 401, env, request);
-      const valid = await bcrypt.compare(password, user.password);
+      const valid = await verifyPassword(password, user.password);
       if (!valid) return errRes('ログインIDまたはパスワードが間違っています', 401, env, request);
       const token = await createSession(env, user.id);
       return jsonRes({ success: true, token, user: { id: user.id, name: user.name, role: user.role, loginId: user.loginId } }, 200, env, request);
-    } catch (e) { return errRes('サーバーエラーが発生しました', 500, env, request); }
+    } catch (e) { console.error(e); return errRes('サーバーエラーが発生しました', 500, env, request); }
   }
 
   if (path === '/api/auth/logout' && method === 'POST') {
@@ -377,9 +430,8 @@ async function handleRequest(request, env) {
   if (path === '/api/properties' && method === 'GET') {
     const auth = await authCheck(request, env);
     if (!auth) return errRes('認証が必要です', 401, env, request);
-    try {
-      return jsonRes({ success: true, data: await getAllProperties(env) }, 200, env, request);
-    } catch (e) { return errRes('サーバーエラーが発生しました', 500, env, request); }
+    try { return jsonRes({ success: true, data: await getAllProperties(env) }, 200, env, request); }
+    catch (e) { return errRes('サーバーエラーが発生しました', 500, env, request); }
   }
 
   const propMatch = path.match(/^\/api\/properties\/([^/]+)$/);
