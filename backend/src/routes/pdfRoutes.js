@@ -11,7 +11,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // アップロードディレクトリの設定
-const uploadDir = path.join(__dirname, '../../uploads/pdfs');
+// 本番環境(Render)では /var/data/uploads/pdfs、開発環境では backend/uploads/pdfs
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
+const uploadDir = process.env.DATA_DIR
+  ? path.join(DATA_DIR, 'uploads/pdfs')
+  : path.join(__dirname, '../../uploads/pdfs');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
