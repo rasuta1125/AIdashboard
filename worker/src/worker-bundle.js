@@ -403,13 +403,19 @@ async function handleRequest(request, env) {
     try {
       const { loginId, password } = await request.json();
       if (!loginId || !password) return errRes('ログインIDとパスワードを入力してください', 400, env, request);
+      console.log('ログイン試行:', loginId);
+      console.log('FIREBASE_PROJECT_ID:', env.FIREBASE_PROJECT_ID ? '設定済み' : '未設定');
+      console.log('FIREBASE_CLIENT_EMAIL:', env.FIREBASE_CLIENT_EMAIL ? '設定済み' : '未設定');
+      console.log('FIREBASE_PRIVATE_KEY:', env.FIREBASE_PRIVATE_KEY ? '設定済み' : '未設定');
       const user = await findUserByLoginId(env, loginId);
+      console.log('ユーザー検索結果:', user ? 'found' : 'not found');
       if (!user) return errRes('ログインIDまたはパスワードが間違っています', 401, env, request);
       const valid = await verifyPassword(password, user.password);
+      console.log('パスワード検証:', valid);
       if (!valid) return errRes('ログインIDまたはパスワードが間違っています', 401, env, request);
       const token = await createSession(env, user.id);
       return jsonRes({ success: true, token, user: { id: user.id, name: user.name, role: user.role, loginId: user.loginId } }, 200, env, request);
-    } catch (e) { console.error(e); return errRes('サーバーエラーが発生しました', 500, env, request); }
+    } catch (e) { console.error('ログインエラー詳細:', e.message, e.stack); return errRes('サーバーエラー: ' + e.message, 500, env, request); }
   }
 
   if (path === '/api/auth/logout' && method === 'POST') {
