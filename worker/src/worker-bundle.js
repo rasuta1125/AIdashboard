@@ -322,7 +322,9 @@ async function deleteProperty(env, id) {
 }
 
 async function getPdfsByPropertyId(env, propertyId) {
-  return await firestoreQuery(env, 'pdfs', [{ field: 'propertyId', value: propertyId }], { field: 'uploadedAt', direction: 'ASCENDING' });
+  // orderByなしで取得し、JS側でソート（Firestoreインデックス不要）
+  const pdfs = await firestoreQuery(env, 'pdfs', [{ field: 'propertyId', value: propertyId }]);
+  return pdfs.sort((a, b) => (a.uploadedAt || '').localeCompare(b.uploadedAt || ''));
 }
 
 async function countPdfsByPropertyId(env, propertyId) {
@@ -526,6 +528,7 @@ async function handleRequest(request, env) {
       const parsed = await parsePdf(request);
       if (parsed.error) return errRes(parsed.error, 400, env, request);
       const pdf = await addPdf(env, propertyId, parsed.buffer, parsed.name, parsed.size);
+      console.log('PDF uploaded successfully:', JSON.stringify(pdf));
       return jsonRes({ success: true, data: pdf }, 201, env, request);
     } catch (e) {
       console.error('PDF upload error:', e.message, e.stack);
