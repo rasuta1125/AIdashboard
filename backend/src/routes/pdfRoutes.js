@@ -1,122 +1,96 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import store from '../data/store.js';
+import store from '../data/firebaseStore.js';
 import { authenticate, adminOnly } from '../middleware/auth.js';
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-// アップロードディレクトリの設定
-// 本番環境(Render)では /var/data/uploads/pdfs、開発環境では backend/uploads/pdfs
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
-const uploadDir = process.env.DATA_DIR
-  ? path.join(DATA_DIR, 'uploads/pdfs')
-  : path.join(__dirname, '../../uploads/pdfs');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer設定
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') {
-    cb(null, true);
-  } else {
-    cb(new Error('PDFファイルのみアップロード可能です'), false);
-  }
-};
-
+// Multer設定（メモリストレージ → Firebase Storageへ転送）
 const upload = multer({
-  storage,
-  fileFilter,
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('PDFファイルのみアップロード可能です'), false);
+    }
+  },
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
 // POST /api/pdfs/upload/:propertyId - PDFアップロード（管理者のみ）
-router.post('/upload/:propertyId', authenticate, adminOnly, upload.single('pdf'), (req, res) => {
-  const { propertyId } = req.params;
+router.post('/upload/:propertyId', authenticate, adminOnly, upload.single('pdf'), async (req, res) => {
+  try {
+    const { propertyId } = req.params;
 
-  const property = store.findPropertyById(propertyId);
-  if (!property) {
-    // アップロードされたファイルを削除
-    if (req.file) fs.unlinkSync(req.file.path);
-    return res.status(404).json({ success: false, error: '物件が見つかりません' });
+    const property = await store.findPropertyById(propertyId);
+    if (!property) {
+      return res.status(404).json({ success: false, error: '物件が見つかりません' });
+    }
+
+    const pdfCount = await store.countPdfsByPropertyId(propertyId);
+    if (pdfCount >= 5) {
+      return res.status(400).json({ success: false, error: 'PDFは1物件につき最大5個まで登録可能です' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'PDFファイルを選択してください' });
+    }
+
+    const pdf = await store.addPdf(propertyId, req.file);
+    res.status(201).json({ success: true, data: pdf });
+  } catch (err) {
+    console.error('PDFアップロードエラー:', err);
+    res.status(500).json({ success: false, error: 'PDFのアップロードに失敗しました' });
   }
-
-  const pdfCount = store.countPdfsByPropertyId(propertyId);
-  if (pdfCount >= 5) {
-    if (req.file) fs.unlinkSync(req.file.path);
-    return res.status(400).json({ success: false, error: 'PDFは1物件につき最大5個まで登録可能です' });
-  }
-
-  if (!req.file) {
-    return res.status(400).json({ success: false, error: 'PDFファイルを選択してください' });
-  }
-
-  const pdf = store.addPdf(propertyId, req.file);
-  res.status(201).json({ success: true, data: pdf });
 });
 
 // GET /api/pdfs/view/:pdfId - PDF閲覧（全ユーザー）
-router.get('/view/:pdfId', authenticate, (req, res) => {
-  const pdf = store.findPdfById(req.params.pdfId);
-  if (!pdf) {
-    return res.status(404).json({ success: false, error: 'PDFが見つかりません' });
+router.get('/view/:pdfId', authenticate, async (req, res) => {
+  try {
+    const result = await store.getPdfStream(req.params.pdfId);
+    if (!result) {
+      return res.status(404).json({ success: false, error: 'PDFが見つかりません' });
+    }
+    const { stream, pdf } = result;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(pdf.originalName)}"`);
+    stream.pipe(res);
+  } catch (err) {
+    console.error('PDF閲覧エラー:', err);
+    res.status(500).json({ success: false, error: 'PDFの取得に失敗しました' });
   }
-
-  if (!fs.existsSync(pdf.path)) {
-    return res.status(404).json({ success: false, error: 'PDFファイルが存在しません' });
-  }
-
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(pdf.originalName)}"`);
-  const stream = fs.createReadStream(pdf.path);
-  stream.pipe(res);
 });
 
 // GET /api/pdfs/download/:pdfId - PDFダウンロード（全ユーザー）
-router.get('/download/:pdfId', authenticate, (req, res) => {
-  const pdf = store.findPdfById(req.params.pdfId);
-  if (!pdf) {
-    return res.status(404).json({ success: false, error: 'PDFが見つかりません' });
+router.get('/download/:pdfId', authenticate, async (req, res) => {
+  try {
+    const result = await store.getPdfStream(req.params.pdfId);
+    if (!result) {
+      return res.status(404).json({ success: false, error: 'PDFが見つかりません' });
+    }
+    const { stream, pdf } = result;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(pdf.originalName)}"`);
+    stream.pipe(res);
+  } catch (err) {
+    console.error('PDFダウンロードエラー:', err);
+    res.status(500).json({ success: false, error: 'PDFのダウンロードに失敗しました' });
   }
-
-  if (!fs.existsSync(pdf.path)) {
-    return res.status(404).json({ success: false, error: 'PDFファイルが存在しません' });
-  }
-
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(pdf.originalName)}"`);
-  const stream = fs.createReadStream(pdf.path);
-  stream.pipe(res);
 });
 
 // DELETE /api/pdfs/:pdfId - PDF削除（管理者のみ）
-router.delete('/:pdfId', authenticate, adminOnly, (req, res) => {
-  const pdf = store.deletePdf(req.params.pdfId);
-  if (!pdf) {
-    return res.status(404).json({ success: false, error: 'PDFが見つかりません' });
+router.delete('/:pdfId', authenticate, adminOnly, async (req, res) => {
+  try {
+    const pdf = await store.deletePdf(req.params.pdfId);
+    if (!pdf) {
+      return res.status(404).json({ success: false, error: 'PDFが見つかりません' });
+    }
+    res.json({ success: true, message: 'PDFを削除しました' });
+  } catch (err) {
+    console.error('PDF削除エラー:', err);
+    res.status(500).json({ success: false, error: 'PDFの削除に失敗しました' });
   }
-
-  // ファイルシステムから削除
-  if (fs.existsSync(pdf.path)) {
-    fs.unlinkSync(pdf.path);
-  }
-
-  res.json({ success: true, message: 'PDFを削除しました' });
 });
 
 export default router;

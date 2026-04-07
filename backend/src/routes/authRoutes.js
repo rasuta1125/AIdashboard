@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import store from '../data/store.js';
+import store from '../data/firebaseStore.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -14,7 +14,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ success: false, error: 'ログインIDとパスワードを入力してください' });
     }
 
-    const user = store.findUserByLoginId(loginId);
+    const user = await store.findUserByLoginId(loginId);
     if (!user) {
       return res.status(401).json({ success: false, error: 'ログインIDまたはパスワードが間違っています' });
     }
@@ -24,7 +24,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, error: 'ログインIDまたはパスワードが間違っています' });
     }
 
-    const token = store.createSession(user.id);
+    const token = await store.createSession(user.id);
 
     res.json({
       success: true,
@@ -43,8 +43,8 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/auth/logout
-router.post('/logout', authenticate, (req, res) => {
-  store.deleteSession(req.token);
+router.post('/logout', authenticate, async (req, res) => {
+  await store.deleteSession(req.token);
   res.json({ success: true, message: 'ログアウトしました' });
 });
 
