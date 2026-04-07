@@ -62,7 +62,11 @@ async function getAccessToken(env) {
   const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
   const signingInput = `${encodedHeader}.${encodedPayload}`;
-  const privateKey = env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+  // シークレットの\nを実際の改行に変換（Cloudflare Workersでは\\nで入ることがある）
+  const privateKey = env.FIREBASE_PRIVATE_KEY
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '')
+    .trim();
   const cryptoKey = await importPrivateKey(privateKey);
   const signature = await crypto.subtle.sign({ name: 'RSASSA-PKCS1-v1_5' }, cryptoKey, new TextEncoder().encode(signingInput));
   const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -78,7 +82,15 @@ async function getAccessToken(env) {
 }
 
 async function importPrivateKey(pem) {
-  const pemBody = pem.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').replace(/\s/g, '');
+  // \n（文字列）と実際の改行の両方に対応
+  const normalizedPem = pem
+    .replace(/\\n/g, '\n')  // エスケープされた\nを実際の改行に
+    .replace(/\\r/g, '')    // \rを削除
+    .trim();
+  const pemBody = normalizedPem
+    .replace('-----BEGIN PRIVATE KEY-----', '')
+    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/[\r\n\s]/g, '');  // 全空白・改行を除去
   const binaryDer = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
   return crypto.subtle.importKey('pkcs8', binaryDer, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
 }
