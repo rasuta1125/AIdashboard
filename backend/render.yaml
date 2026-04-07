@@ -7,9 +7,13 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      - key: PORT
-        value: 3001
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
         fromInput: true
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1

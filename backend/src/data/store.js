@@ -9,7 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // データ保存先ディレクトリ
-const DATA_DIR = path.join(__dirname, '../../data');
+// Render本番環境: /data（永続ディスク）、開発環境: backend/data/
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const SESSION_FILE = path.join(DATA_DIR, 'sessions.json');
 

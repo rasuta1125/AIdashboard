@@ -1,18 +1,10 @@
-# Cloudflare Pages 設定ファイル
-# このファイルはCloudflare Pagesのビルド設定を定義します
+# Cloudflare Pages 設定
+name = "real-estate-management"
+compatibility_date = "2024-01-01"
 
-name = "real-estate-dashboard"
-compatibility_date = "2025-11-28"
-
-# ページ設定
 [build]
 command = "npm run build"
 cwd = "."
-watch_paths = ["src/**", "public/**"]
 
 [build.upload]
-format = "service-worker"
 dir = "dist"
-
-# 環境変数（Cloudflareダッシュボードで設定してください）
-# VITE_API_BASE_URL = "https://your-backend.onrender.com"
