@@ -75,7 +75,7 @@ export default function Login() {
 
         <div className="login-footer">
           <div className="account-info">
-            <p><strong>管理ユーザー：</strong> admin / admin123</p>
+            <p><strong>管理ユーザー：</strong> goldkei / goldkei123!</p>
             <p><strong>利用ユーザー：</strong> user / user123</p>
           </div>
         </div>

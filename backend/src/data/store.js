@@ -112,8 +112,8 @@ if (cleaned) saveSessions(sessions);
 const users = [
   {
     id: '1',
-    loginId: 'admin',
-    password: bcrypt.hashSync('admin123', 10),
+    loginId: 'goldkei',
+    password: bcrypt.hashSync('goldkei123!', 10),
     name: '管理者',
     role: 'admin',
   },
