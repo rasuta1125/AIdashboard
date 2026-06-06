@@ -889,84 +889,308 @@ body {
 }
 
 /* ============================================
+   物件カード（スマホ用）
+============================================ */
+.property-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.property-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.property-card:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
+}
+
+.property-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.property-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.property-card-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+
+.property-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.property-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* PC/スマホ表示切替 */
+.pc-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* ============================================
    レスポンシブ
 ============================================ */
 @media (max-width: 768px) {
+  /* レイアウト */
   .main-content {
-    padding: 20px 16px;
+    padding: 16px 12px;
   }
 
   .header-inner {
-    padding: 0 16px;
+    padding: 0 12px;
+    height: 56px;
   }
 
   .header-title {
-    font-size: 16px;
+    font-size: 15px;
   }
 
-  .page-title {
+  .header-icon {
     font-size: 20px;
   }
 
-  .data-table th:nth-child(4),
-  .data-table td:nth-child(4) {
+  .page-title {
+    font-size: 18px;
+  }
+
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  /* ユーザー名を非表示 */
+  .user-name {
     display: none;
   }
 
-  .action-buttons {
-    flex-direction: column;
-    align-items: stretch;
+  /* ログアウトボタンを小さく */
+  .btn-logout {
+    font-size: 12px;
+    padding: 7px 10px;
   }
 
+  /* PC表示を隠してカード表示に切替 */
+  .pc-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ボタン全般 */
+  .btn {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  .btn-sm {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  /* PDFリスト */
   .pdf-item {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .pdf-actions {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .pdf-actions .btn {
+    flex: 1;
+  }
+
+  /* 詳細カード */
+  .detail-card {
+    padding: 16px 14px;
+    margin-bottom: 16px;
+  }
+
+  .detail-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .detail-title {
+    font-size: 18px;
+  }
+
+  .detail-info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .price-value {
+    font-size: 18px;
+  }
+
+  /* PDFアップロードエリア */
+  .pdf-upload-area {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pdf-upload-area .btn {
+    width: 100%;
+  }
+
+  /* モーダル */
+  .modal-content {
+    max-width: 100%;
+    margin: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-confirm {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .modal-header {
+    padding: 20px 20px 0;
+  }
+
+  .modal-form {
+    padding: 16px 20px;
+  }
+
+  .modal-body {
+    padding: 16px 20px;
+  }
+
+  .modal-footer {
+    padding: 14px 20px 24px;
+    gap: 8px;
+  }
+
+  .modal-footer .btn {
+    flex: 1;
+  }
+
+  /* PDFビューアー */
+  .pdf-viewer-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .pdf-viewer-modal {
+    border-radius: 0;
+    max-height: 100vh;
+    height: 100vh;
+  }
+
+  .pdf-viewer-header {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+  }
+
+  .pdf-viewer-title {
+    font-size: 13px;
+    width: 100%;
+    order: -1;
+  }
+
+  .pdf-iframe {
+    min-height: 300px;
+  }
+
+  /* トースト */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    text-align: center;
+  }
+
+  /* ログイン */
+  .login-card {
+    padding: 24px 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .login-icon {
+    font-size: 40px;
+  }
+
+  .login-header h1 {
+    font-size: 20px;
+  }
+
+  /* フォーム入力欄を大きく */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px; /* iOSの自動ズーム防止 */
+    padding: 12px 14px;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-inner {
+    height: 52px;
+  }
+
+  .header-title {
+    font-size: 14px;
   }
 
   .detail-info-grid {
     grid-template-columns: 1fr;
   }
 
-  .pdf-viewer-modal {
-    max-height: calc(100vh - 32px);
+  .property-card-price {
+    font-size: 18px;
   }
 
-  .modal-content {
-    max-width: 100%;
-  }
-
-  .login-card {
-    padding: 28px 20px;
-  }
-
-  .user-name {
-    display: none;
-  }
-
-  .toast {
-    bottom: 16px;
-    right: 16px;
-    left: 16px;
-    max-width: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .header-inner {
-    height: 56px;
-  }
-
-  .data-table th:nth-child(3),
-  .data-table td:nth-child(3) {
-    display: none;
-  }
-
-  .detail-card {
-    padding: 20px 16px;
+  .role-badge {
+    font-size: 11px;
+    padding: 2px 8px;
   }
 }

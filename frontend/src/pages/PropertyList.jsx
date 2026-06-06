@@ -42,12 +42,14 @@ export default function PropertyList() {
     setShowForm(true);
   };
 
-  const handleEdit = (property) => {
+  const handleEdit = (property, e) => {
+    e.stopPropagation();
     setEditTarget(property);
     setShowForm(true);
   };
 
-  const handleDeleteConfirm = (property) => {
+  const handleDeleteConfirm = (property, e) => {
+    e.stopPropagation();
     setDeleteTarget(property);
   };
 
@@ -93,7 +95,7 @@ export default function PropertyList() {
               </span>
               <span className="user-name">{user?.name}</span>
             </div>
-            <button className="btn btn-outline" onClick={handleLogout}>
+            <button className="btn btn-outline btn-logout" onClick={handleLogout}>
               ログアウト
             </button>
           </div>
@@ -133,61 +135,107 @@ export default function PropertyList() {
             )}
           </div>
         ) : (
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>物件名</th>
-                  <th>金額</th>
-                  <th>PDF数</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                {properties.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <span className="property-name">{p.name}</span>
-                    </td>
-                    <td>
-                      <span className="property-price">{formatPrice(p.price)}</span>
-                    </td>
-                    <td>
-                      <span className={`pdf-count-badge ${p.pdfCount >= 5 ? 'pdf-count-full' : ''}`}>
-                        📄 {p.pdfCount} / 5
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          className="btn btn-sm btn-secondary"
-                          onClick={() => navigate(`/properties/${p.id}`)}
-                        >
-                          詳細
-                        </button>
-                        {isAdmin && (
-                          <>
-                            <button
-                              className="btn btn-sm btn-outline"
-                              onClick={() => handleEdit(p)}
-                            >
-                              編集
-                            </button>
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleDeleteConfirm(p)}
-                            >
-                              削除
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
+          <>
+            {/* PC: テーブル表示 */}
+            <div className="table-container pc-only">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>物件名</th>
+                    <th>金額</th>
+                    <th>PDF数</th>
+                    <th>操作</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {properties.map((p) => (
+                    <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/properties/${p.id}`)}>
+                      <td>
+                        <span className="property-name">{p.name}</span>
+                      </td>
+                      <td>
+                        <span className="property-price">{formatPrice(p.price)}</span>
+                      </td>
+                      <td>
+                        <span className={`pdf-count-badge ${p.pdfCount >= 5 ? 'pdf-count-full' : ''}`}>
+                          📄 {p.pdfCount} / 5
+                        </span>
+                      </td>
+                      <td>
+                        <div className="action-buttons" onClick={e => e.stopPropagation()}>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => navigate(`/properties/${p.id}`)}
+                          >
+                            詳細
+                          </button>
+                          {isAdmin && (
+                            <>
+                              <button
+                                className="btn btn-sm btn-outline"
+                                onClick={(e) => handleEdit(p, e)}
+                              >
+                                編集
+                              </button>
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={(e) => handleDeleteConfirm(p, e)}
+                              >
+                                削除
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* スマホ: カード表示 */}
+            <div className="property-card-list mobile-only">
+              {properties.map((p) => (
+                <div
+                  key={p.id}
+                  className="property-card"
+                  onClick={() => navigate(`/properties/${p.id}`)}
+                >
+                  <div className="property-card-header">
+                    <div className="property-card-name">{p.name}</div>
+                    <span className={`pdf-count-badge ${p.pdfCount >= 5 ? 'pdf-count-full' : ''}`}>
+                      📄 {p.pdfCount} / 5
+                    </span>
+                  </div>
+                  <div className="property-card-price">{formatPrice(p.price)}</div>
+                  <div className="property-card-footer">
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/properties/${p.id}`); }}
+                    >
+                      詳細を見る →
+                    </button>
+                    {isAdmin && (
+                      <div className="property-card-actions">
+                        <button
+                          className="btn btn-sm btn-outline"
+                          onClick={(e) => handleEdit(p, e)}
+                        >
+                          編集
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={(e) => handleDeleteConfirm(p, e)}
+                        >
+                          削除
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </main>
 

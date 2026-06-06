@@ -204,7 +204,7 @@ export default function PropertyDetail() {
                   {uploadLoading ? 'アップロード中...' : '＋ PDF追加'}
                 </button>
                 {pdfs.length >= 5 && (
-                  <span className="limit-note">最大件数に達しています</span>
+                  <span className="limit-note">上限（5件）に達しています</span>
                 )}
               </div>
             )}
@@ -234,20 +234,20 @@ export default function PropertyDetail() {
                       className="btn btn-sm btn-secondary"
                       onClick={() => handleView(pdf)}
                     >
-                      閲覧
+                      👁 閲覧
                     </button>
                     <button
                       className="btn btn-sm btn-outline"
                       onClick={() => handleDownload(pdf)}
                     >
-                      保存
+                      ⬇ 保存
                     </button>
                     {isAdmin && (
                       <button
                         className="btn btn-sm btn-danger"
                         onClick={() => setDeletePdfTarget(pdf)}
                       >
-                        削除
+                        🗑 削除
                       </button>
                     )}
                   </div>
